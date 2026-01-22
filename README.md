@@ -2,54 +2,56 @@
 
 A macOS background service that shows native notifications when Claude Code asks interactive questions, with sound alerts and click-to-focus on the correct Cursor window.
 
-## Quick Start
+## Quick Install
 
-### 1. Start the App
 ```bash
-open /Users/shaimalul/Documents/Dev/ClaudeNotifier/.build/release/ClaudeNotifier.app
+git clone https://github.com/yourusername/claude-notifier.git
+cd claude-notifier
+./scripts/install.sh
 ```
 
-### 2. Grant Permissions
-On first launch, grant these permissions when prompted:
-- **Notifications** - Allow notifications
-- **Accessibility** - System Settings → Privacy & Security → Accessibility → Enable ClaudeNotifier.app
+That's it! The installer will:
+1. Build the Swift app
+2. Install to `~/Applications/ClaudeNotifier.app`
+3. Install the Claude Code plugin
+4. Set up auto-start on login
+5. Start the app
 
-### 3. Test Notification
+## Uninstall
+
 ```bash
+./scripts/uninstall.sh
+```
+
+Or: `make uninstall`
+
+## Grant Permissions
+
+On first launch, grant these permissions:
+
+1. **Notifications** - Click "Allow" when prompted
+2. **Accessibility** (for window focus):
+   - System Settings > Privacy & Security > Accessibility
+   - Enable `ClaudeNotifier.app`
+
+## Test It
+
+```bash
+# Health check
+curl http://localhost:19847/health
+
+# Send test notification
 curl -X POST http://localhost:19847/notify \
   -H "Content-Type: application/json" \
-  -d '{"message":"Test notification!","cwd":"/Users/shaimalul/Documents/Dev","sessionId":"test","type":"permission_prompt","timestamp":'$(date +%s)'}'
-```
-
-### 4. Check Health
-```bash
-curl http://localhost:19847/health
-```
-
-### 5. Stop the App
-```bash
-pkill ClaudeNotifier
-```
-
-## Auto-Start on Login
-
-**Option 1: System Settings (GUI)**
-1. Open **System Settings** → **General** → **Login Items**
-2. Click **+** under "Open at Login"
-3. Navigate to `/Users/shaimalul/Documents/Dev/ClaudeNotifier/.build/release/`
-4. Select **ClaudeNotifier.app** → Click Open
-
-**Option 2: Terminal**
-```bash
-osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Users/shaimalul/Documents/Dev/ClaudeNotifier/.build/release/ClaudeNotifier.app", hidden:false}'
+  -d '{"message":"Test notification!","cwd":"/tmp","sessionId":"test","type":"test","timestamp":0}'
 ```
 
 ## Features
 
-- 🔊 **Sound Alert** - Plays "Glass" sound on new notifications
-- 💬 **Native Notifications** - macOS Notification Center integration
-- 🎯 **Click to Focus** - Clicking a notification focuses the correct Cursor window
-- 🔇 **No UI** - Runs as invisible background service (no menu bar icon)
+- **Sound Alert** - Plays "Glass" sound on new notifications
+- **Native Notifications** - macOS Notification Center integration
+- **Click to Focus** - Clicking a notification focuses the correct Cursor window
+- **No UI** - Runs as invisible background service
 
 ## How It Works
 
@@ -59,54 +61,35 @@ Claude Code Hook → HTTP POST :19847 → Native macOS Notification
                                      Click → Focus Cursor Window
 ```
 
-## Claude Code Integration
+The plugin hooks into Claude Code events (`permission_prompt`, `idle_prompt`, `elicitation_dialog`) and sends notifications to the background app.
 
-The hooks are configured in `~/.claude/settings.json`:
+## Requirements
 
-```json
-{
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "permission_prompt|idle_prompt|elicitation_dialog",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "~/.claude/plugins/claude-notifier-plugin/scripts/notify.sh",
-            "timeout": 5
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+- macOS 13.0+
+- Xcode Command Line Tools (`xcode-select --install`)
+- [jq](https://stedolan.github.io/jq/) (auto-installed via Homebrew)
 
-**Triggers on:**
-- `permission_prompt` - Claude asks for permission
-- `idle_prompt` - Claude waiting for input (60+ sec)
-- `elicitation_dialog` - MCP tool dialogs
-
-## Build from Source
+## Manual Commands
 
 ```bash
-cd /Users/shaimalul/Documents/Dev/ClaudeNotifier
+# Build only (no install)
+make build
 
-# Build release
-swift build -c release
+# Start app manually
+open ~/Applications/ClaudeNotifier.app
 
-# Create app bundle (required for notifications to work)
-./scripts/create-app-bundle.sh
+# Stop app
+pkill ClaudeNotifier
 
 # Clean build
-swift package clean && swift build -c release && ./scripts/create-app-bundle.sh
+make clean
 ```
 
 ## Troubleshooting
 
 ### App not starting?
 ```bash
-# Check if already running
+# Check if running
 pgrep ClaudeNotifier
 
 # Check port in use
@@ -114,16 +97,13 @@ lsof -i :19847
 ```
 
 ### No notifications?
-1. Check notification permissions in System Settings → Notifications → ClaudeNotifier
-2. Test the endpoint:
-```bash
-curl http://localhost:19847/health
-```
+1. Check System Settings > Notifications > ClaudeNotifier > Allow
+2. Verify app is running: `pgrep ClaudeNotifier`
+3. Check health: `curl http://localhost:19847/health`
 
 ### Window focus not working?
-1. Grant accessibility permissions:
-   - System Settings → Privacy & Security → Accessibility
-   - Enable ClaudeNotifier.app
+1. System Settings > Privacy & Security > Accessibility
+2. Enable ClaudeNotifier.app (remove and re-add if needed)
 
 ## Configuration
 
@@ -131,24 +111,37 @@ curl http://localhost:19847/health
 |---------|-------|
 | HTTP Port | 19847 |
 | Sound | Glass.aiff (50% volume) |
+| Install Location | ~/Applications |
+| Plugin Location | ~/.claude/plugins/claude-notifier-plugin |
 
-## Files
+## Project Structure
 
 ```
-ClaudeNotifier/
-├── .build/release/ClaudeNotifier.app  # App bundle
-├── ClaudeNotifier/
-│   ├── ClaudeNotifierApp.swift        # Entry point
+claude-notifier/
+├── ClaudeNotifier/               # Swift macOS app
+│   ├── ClaudeNotifierApp.swift   # Entry point
 │   ├── Services/
-│   │   ├── HTTPServer.swift           # HTTP server
-│   │   ├── NotificationManager.swift  # Notifications
-│   │   ├── NotificationDelegate.swift # Click handling
-│   │   └── WindowFocusHandler.swift   # Cursor focus
+│   │   ├── HTTPServer.swift      # HTTP server
+│   │   ├── NotificationManager.swift
+│   │   ├── NotificationDelegate.swift
+│   │   └── WindowFocusHandler.swift
 │   ├── Models/
-│   │   └── ClaudeNotification.swift   # Data model
+│   │   └── ClaudeNotification.swift
 │   └── Resources/
-│       └── Cursor.icns                # App icon
+│       └── Cursor.icns
+├── plugin/                       # Claude Code plugin
+│   ├── .claude-plugin/plugin.json
+│   ├── hooks/hooks.json
+│   └── scripts/notify.sh
 ├── scripts/
-│   └── create-app-bundle.sh           # Bundle creator
-└── Package.swift
+│   ├── install.sh                # One-command installer
+│   ├── uninstall.sh              # Clean removal
+│   └── create-app-bundle.sh      # App bundle creator
+├── Package.swift
+├── Makefile
+└── README.md
 ```
+
+## License
+
+MIT
