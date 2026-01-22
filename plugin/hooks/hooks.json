@@ -1,0 +1,28 @@
+{
+  "description": "Hooks to notify macOS menu bar app when Claude Code needs attention",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/notify.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "claude-notifier",
+  "version": "1.0.0",
+  "description": "Sends notifications to a macOS menu bar app when Claude Code asks interactive questions",
+  "author": {
+    "name": "Developer"
+  },
+  "license": "MIT",
+  "hooks": "./hooks/hooks.json"
+}
