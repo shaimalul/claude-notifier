@@ -1,4 +1,4 @@
-.PHONY: install uninstall build clean help
+.PHONY: install uninstall build test lint format clean help
 
 # Default target
 help:
@@ -7,6 +7,9 @@ help:
 	@echo "  make install    - Build and install app + plugin"
 	@echo "  make uninstall  - Remove app and plugin"
 	@echo "  make build      - Build app only (no install)"
+	@echo "  make test       - Run test suite"
+	@echo "  make lint       - Run SwiftLint"
+	@echo "  make format     - Format code with SwiftFormat"
 	@echo "  make clean      - Clean build artifacts"
 	@echo ""
 
@@ -24,6 +27,31 @@ build:
 	swift build -c release
 	./scripts/create-app-bundle.sh
 	@echo "Build complete: .build/release/ClaudeNotifier.app"
+
+# Run tests
+test:
+	@echo "Running tests..."
+	swift test
+
+# Run SwiftLint
+lint:
+	@echo "Running SwiftLint..."
+	@if command -v swiftlint >/dev/null 2>&1; then \
+		swiftlint lint; \
+	else \
+		echo "SwiftLint not installed. Install with: brew install swiftlint"; \
+		exit 1; \
+	fi
+
+# Format code with SwiftFormat
+format:
+	@echo "Formatting code..."
+	@if command -v swiftformat >/dev/null 2>&1; then \
+		swiftformat .; \
+	else \
+		echo "SwiftFormat not installed. Install with: brew install swiftformat"; \
+		exit 1; \
+	fi
 
 # Clean build artifacts
 clean:
