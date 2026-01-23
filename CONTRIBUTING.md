@@ -64,6 +64,20 @@ swiftformat .
    ```
 8. Push and create a Pull Request
 
+## PR Review Process
+
+1. **Acknowledgment**: PRs are acknowledged within 48 hours
+2. **Review**: Code review within 5 business days
+3. **Feedback**: Address all review comments
+4. **Merge**: Maintainer merges after approval
+
+### Merge Requirements
+
+- All CI checks pass (build, test, lint)
+- At least one maintainer approval
+- No unresolved conversations
+- Test coverage maintained or improved
+
 ### Commit Message Format
 
 - `feat:` - New features
