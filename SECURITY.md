@@ -26,6 +26,27 @@ If you discover a security vulnerability in ClaudeNotifier, please report it res
 - Regular updates on progress
 - Credit in the release notes (if desired)
 
+## Severity Classification
+
+| Severity | Description | Response Time | Patch Timeline |
+|----------|-------------|---------------|----------------|
+| Critical | RCE, data breach, privilege escalation | 24 hours | 48 hours |
+| High | Local code execution, auth bypass | 48 hours | 7 days |
+| Medium | DoS, information disclosure | 5 days | 14 days |
+| Low | Minor issues, hardening | 7 days | Next release |
+
+## Coordinated Disclosure
+
+We follow a 90-day coordinated disclosure timeline:
+
+1. **Day 0**: Vulnerability reported
+2. **Day 1-7**: Initial triage and acknowledgment
+3. **Day 8-60**: Patch development and testing
+4. **Day 61-75**: Patch release preparation
+5. **Day 76-90**: Coordinated public disclosure
+
+Security fixes are released before public disclosure. Researchers receive credit unless they prefer anonymity.
+
 ## Security Considerations
 
 ### Permissions Required

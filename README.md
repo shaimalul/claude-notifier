@@ -22,6 +22,10 @@ That's it! The installer will:
 4. Set up auto-start on login
 5. Start the app
 
+## Demo
+
+![Claude Notifier Demo](assets/demo.gif)
+
 ## Uninstall
 
 ```bash
@@ -73,6 +77,16 @@ The plugin hooks into Claude Code events (`permission_prompt`, `idle_prompt`, `e
 - macOS 13.0+
 - Xcode Command Line Tools (`xcode-select --install`)
 - [jq](https://stedolan.github.io/jq/) (auto-installed via Homebrew)
+
+## Platform Compatibility
+
+| Platform | Architecture | Status |
+|----------|--------------|--------|
+| macOS 13 (Ventura) | Apple Silicon | Supported |
+| macOS 13 (Ventura) | Intel | Supported |
+| macOS 14 (Sonoma) | Apple Silicon | Supported |
+| macOS 14 (Sonoma) | Intel | Supported |
+| macOS 15 (Sequoia) | Apple Silicon | Supported |
 
 ## Development
 
