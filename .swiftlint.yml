@@ -1,0 +1,43 @@
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - identifier_name
+
+opt_in_rules:
+  - empty_count
+  - explicit_init
+  - closure_spacing
+  - overridden_super_call
+  - redundant_nil_coalescing
+  - operator_usage_whitespace
+  - closure_end_indentation
+  - first_where
+  - fatal_error_message
+  - toggle_bool
+  - sorted_first_last
+
+included:
+  - Sources
+  - Tests
+
+excluded:
+  - .build
+  - Package.swift
+  - DerivedData
+
+file_length:
+  warning: 150
+  error: 200
+
+type_body_length:
+  warning: 200
+  error: 300
+
+function_body_length:
+  warning: 30
+  error: 50
+
+nesting:
+  type_level: 2
+
+reporter: xcode

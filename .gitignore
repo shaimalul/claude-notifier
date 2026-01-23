@@ -1,1 +1,37 @@
-.build
+# Build
+.build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+
+# Swift Package Manager
+Package.resolved
+.swiftpm/
+
+# IDE
+*.swp
+*.swo
+*~
+.idea/
+*.xcuserdata/
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# App bundles (built artifacts)
+*.app/
+*.dmg
+
+# Debug logs
+*.log
+
+# Test artifacts
+.coverage/
+*.xcresult/
+
+# Distribution
+dist/
