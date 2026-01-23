@@ -1,0 +1,13 @@
+--swiftversion 5.9
+--indent 4
+--indentcase false
+--trimwhitespace always
+--importgrouping alpha
+--semicolons never
+--header strip
+--disable redundantSelf
+--enable isEmpty
+--enable sortImports
+--maxwidth 120
+--wraparguments before-first
+--wrapcollections before-first
