@@ -1,4 +1,4 @@
-.PHONY: install uninstall build test lint format clean help
+.PHONY: install uninstall build test lint format clean setup-hooks help
 
 # Default target
 help:
@@ -10,6 +10,7 @@ help:
 	@echo "  make test       - Run test suite"
 	@echo "  make lint       - Run SwiftLint"
 	@echo "  make format     - Format code with SwiftFormat"
+	@echo "  make setup-hooks - Install git pre-commit hook"
 	@echo "  make clean      - Clean build artifacts"
 	@echo ""
 
@@ -59,3 +60,10 @@ clean:
 	swift package clean
 	rm -rf .build
 	@echo "Clean complete"
+
+# Setup git hooks
+setup-hooks:
+	@echo "Setting up git hooks..."
+	@cp scripts/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "Pre-commit hook installed"

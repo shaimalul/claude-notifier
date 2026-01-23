@@ -1,0 +1,34 @@
+#!/bin/bash
+# Pre-commit hook to run SwiftFormat and SwiftLint
+
+set -e
+
+echo "Running pre-commit checks..."
+
+# Check SwiftFormat
+if command -v swiftformat >/dev/null 2>&1; then
+    echo "Checking SwiftFormat..."
+    if ! swiftformat --lint .; then
+        echo ""
+        echo "SwiftFormat check failed!"
+        echo "Run 'swiftformat .' or 'make format' to fix."
+        exit 1
+    fi
+else
+    echo "SwiftFormat not installed. Install with: brew install swiftformat"
+fi
+
+# Check SwiftLint
+if command -v swiftlint >/dev/null 2>&1; then
+    echo "Checking SwiftLint..."
+    if ! swiftlint lint --strict --quiet; then
+        echo ""
+        echo "SwiftLint check failed!"
+        echo "Fix the violations above before committing."
+        exit 1
+    fi
+else
+    echo "SwiftLint not installed. Install with: brew install swiftlint"
+fi
+
+echo "All pre-commit checks passed!"
