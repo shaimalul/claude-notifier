@@ -1,5 +1,25 @@
 import Foundation
 
+enum HTTPStatus: Int {
+    case ok = 200
+    case badRequest = 400
+    case notFound = 404
+    case methodNotAllowed = 405
+    case payloadTooLarge = 413
+    case internalServerError = 500
+
+    var reasonPhrase: String {
+        switch self {
+        case .ok: "OK"
+        case .badRequest: "Bad Request"
+        case .notFound: "Not Found"
+        case .methodNotAllowed: "Method Not Allowed"
+        case .payloadTooLarge: "Payload Too Large"
+        case .internalServerError: "Internal Server Error"
+        }
+    }
+}
+
 protocol ResponseBuilderProtocol {
     func build(statusCode: Int, body: String) -> Data?
 }
@@ -25,6 +45,8 @@ final class ResponseBuilder: ResponseBuilderProtocol {
         case 200: "OK"
         case 400: "Bad Request"
         case 404: "Not Found"
+        case 405: "Method Not Allowed"
+        case 413: "Payload Too Large"
         case 500: "Internal Server Error"
         default: "Unknown"
         }
