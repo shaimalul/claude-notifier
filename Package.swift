@@ -14,10 +14,15 @@ let package = Package(
         .executableTarget(
             name: "ClaudeNotifier",
             dependencies: [],
-            path: "ClaudeNotifier",
+            path: "Sources/ClaudeNotifier",
             resources: [
                 .copy("Resources")
             ]
+        ),
+        .testTarget(
+            name: "ClaudeNotifierTests",
+            dependencies: ["ClaudeNotifier"],
+            path: "Tests/ClaudeNotifierTests"
         )
     ]
 )

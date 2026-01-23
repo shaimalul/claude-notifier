@@ -1,9 +1,14 @@
 import Foundation
 import UserNotifications
 
-class NotificationManager {
-    static let shared = NotificationManager()
-    private init() {}
+final class NotificationService: NotificationServiceProtocol {
+    static let shared = NotificationService()
+
+    private let logger: LoggerProtocol
+
+    init(logger: LoggerProtocol = Logger.shared) {
+        self.logger = logger
+    }
 
     func sendNotification(_ notification: ClaudeNotification) {
         let content = UNMutableNotificationContent()
@@ -11,7 +16,7 @@ class NotificationManager {
         content.body = notification.message
         content.sound = UNNotificationSound.default
         content.userInfo = ["cwd": notification.cwd]
-        content.categoryIdentifier = "CLAUDE_NOTIFICATION"
+        content.categoryIdentifier = AppConfig.notificationCategoryIdentifier
 
         let request = UNNotificationRequest(
             identifier: notification.id.uuidString,
@@ -19,20 +24,19 @@ class NotificationManager {
             trigger: nil
         )
 
-        UNUserNotificationCenter.current().add(request) { error in
+        UNUserNotificationCenter.current().add(request) { [weak self] error in
             if let error = error {
-                print("Notification error: \(error)")
+                self?.logger.log("Notification error: \(error)", category: "Notification")
             }
         }
 
-        // Play sound for reliability
-        self.playSound()
+        playSound()
     }
 
     private func playSound() {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/afplay")
-        process.arguments = ["-v", "0.5", "/System/Library/Sounds/Glass.aiff"]
+        process.arguments = ["-v", AppConfig.soundVolume, AppConfig.soundFilePath]
         try? process.run()
     }
 }
