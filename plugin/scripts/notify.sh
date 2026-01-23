@@ -44,16 +44,25 @@ case "$HOOK_EVENT" in
     ;;
 esac
 
+# Build JSON payload safely using jq (prevents shell injection)
+PAYLOAD=$(jq -n \
+  --arg msg "$MESSAGE" \
+  --arg cwd "$CWD" \
+  --arg sid "$SESSION_ID" \
+  --arg type "$NOTIFICATION_TYPE" \
+  --argjson ts "$(date +%s)" \
+  '{
+    message: $msg,
+    cwd: $cwd,
+    sessionId: $sid,
+    type: $type,
+    timestamp: $ts
+  }')
+
 # Send to menu bar app (non-blocking, ignore errors if app not running)
 curl -s -X POST "http://localhost:${PORT}/notify" \
   -H "Content-Type: application/json" \
-  -d "{
-    \"message\": \"$MESSAGE\",
-    \"cwd\": \"$CWD\",
-    \"sessionId\": \"$SESSION_ID\",
-    \"type\": \"$NOTIFICATION_TYPE\",
-    \"timestamp\": $(date +%s)
-  }" 2>/dev/null || true
+  -d "$PAYLOAD" 2>/dev/null || true
 
 # Exit successfully regardless (don't block Claude Code)
 exit 0
