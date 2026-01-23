@@ -42,3 +42,26 @@ jobs:
 
       - name: Check Formatting
         run: swiftformat --lint .
+
+  coverage:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Run Tests with Coverage
+        run: swift test --enable-code-coverage
+
+      - name: Generate Coverage Report
+        run: |
+          BIN_PATH=$(swift build --show-bin-path)
+          XCTEST_PATH=$(find "${BIN_PATH}" -name '*.xctest' -type d | head -1)
+          PROFDATA=$(find .build -name 'default.profdata' -type f | head -1)
+          if [ -n "$XCTEST_PATH" ] && [ -n "$PROFDATA" ]; then
+            xcrun llvm-cov report \
+              "${XCTEST_PATH}/Contents/MacOS/ClaudeNotifierPackageTests" \
+              -instr-profile="${PROFDATA}" \
+              -ignore-filename-regex='.build|Tests'
+          fi
