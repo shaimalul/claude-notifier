@@ -1,11 +1,16 @@
 # Claude Notifier
 
+[![CI](https://github.com/shaimalul/claude-notifier/actions/workflows/ci.yml/badge.svg)](https://github.com/shaimalul/claude-notifier/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![macOS](https://img.shields.io/badge/macOS-13.0+-blue.svg)](https://www.apple.com/macos/)
+[![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org/)
+
 A macOS background service that shows native notifications when Claude Code asks interactive questions, with sound alerts and click-to-focus on the correct Cursor window.
 
 ## Quick Install
 
 ```bash
-git clone https://github.com/yourusername/claude-notifier.git
+git clone https://github.com/shaimalul/claude-notifier.git
 cd claude-notifier
 ./scripts/install.sh
 ```
@@ -69,20 +74,34 @@ The plugin hooks into Claude Code events (`permission_prompt`, `idle_prompt`, `e
 - Xcode Command Line Tools (`xcode-select --install`)
 - [jq](https://stedolan.github.io/jq/) (auto-installed via Homebrew)
 
-## Manual Commands
+## Development
+
+### Build & Test
 
 ```bash
-# Build only (no install)
-make build
+# Build
+swift build
 
-# Start app manually
-open ~/Applications/ClaudeNotifier.app
+# Run tests
+swift test
 
-# Stop app
-pkill ClaudeNotifier
+# Lint (requires SwiftLint)
+swiftlint lint
 
-# Clean build
-make clean
+# Format (requires SwiftFormat)
+swiftformat .
+```
+
+### Make Targets
+
+```bash
+make build      # Build release binary
+make test       # Run test suite
+make lint       # Run SwiftLint
+make format     # Format code with SwiftFormat
+make install    # Full installation
+make uninstall  # Remove app and plugin
+make clean      # Clean build artifacts
 ```
 
 ## Troubleshooting
@@ -118,17 +137,19 @@ lsof -i :19847
 
 ```
 claude-notifier/
-├── ClaudeNotifier/               # Swift macOS app
-│   ├── ClaudeNotifierApp.swift   # Entry point
-│   ├── Services/
-│   │   ├── HTTPServer.swift      # HTTP server
-│   │   ├── NotificationManager.swift
-│   │   ├── NotificationDelegate.swift
-│   │   └── WindowFocusHandler.swift
-│   ├── Models/
-│   │   └── ClaudeNotification.swift
+├── Sources/ClaudeNotifier/       # Swift macOS app
+│   ├── App/                      # Entry point & app delegate
+│   ├── Config/                   # Centralized configuration
+│   ├── Core/                     # Protocols & shared utilities
+│   │   ├── Protocols/
+│   │   └── Logger/
+│   ├── Services/                 # Business logic
+│   │   ├── HTTPServer/
+│   │   ├── Notification/
+│   │   └── Window/
+│   ├── Models/                   # Data models
 │   └── Resources/
-│       └── Cursor.icns
+├── Tests/ClaudeNotifierTests/    # Unit tests
 ├── plugin/                       # Claude Code plugin
 │   ├── .claude-plugin/plugin.json
 │   ├── hooks/hooks.json
@@ -136,12 +157,17 @@ claude-notifier/
 ├── scripts/
 │   ├── install.sh                # One-command installer
 │   ├── uninstall.sh              # Clean removal
-│   └── create-app-bundle.sh      # App bundle creator
+│   └── create-app-bundle.sh
+├── .github/                      # CI/CD workflows
 ├── Package.swift
 ├── Makefile
 └── README.md
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 ## License
 
-MIT
+[MIT](LICENSE)
