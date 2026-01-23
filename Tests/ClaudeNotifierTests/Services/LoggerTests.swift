@@ -1,5 +1,5 @@
-import XCTest
 @testable import ClaudeNotifier
+import XCTest
 
 final class LoggerTests: XCTestCase {
     var mockFileLogger: MockFileLogger!

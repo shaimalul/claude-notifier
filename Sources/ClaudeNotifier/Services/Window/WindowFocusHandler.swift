@@ -1,5 +1,5 @@
-import Foundation
 import AppKit
+import Foundation
 
 final class WindowFocusHandler: WindowFocusProtocol {
     static let shared = WindowFocusHandler()
@@ -53,7 +53,8 @@ final class WindowFocusHandler: WindowFocusProtocol {
         for window in windows {
             var titleRef: CFTypeRef?
             if AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &titleRef) == .success,
-               let title = titleRef as? String {
+               let title = titleRef as? String
+            {
                 windowNames.append(title)
                 if title.contains(projectName) {
                     AXUIElementPerformAction(window, kAXRaiseAction as CFString)
@@ -75,7 +76,9 @@ final class WindowFocusHandler: WindowFocusProtocol {
             logger.log("Activated Cursor app", category: "WindowFocus")
         } else {
             logger.log("Cursor app not found, trying to launch...", category: "WindowFocus")
-            if let cursorURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: AppConfig.CursorApp.bundleIdentifier) {
+            if let cursorURL = NSWorkspace.shared
+                .urlForApplication(withBundleIdentifier: AppConfig.CursorApp.bundleIdentifier)
+            {
                 NSWorkspace.shared.openApplication(at: cursorURL, configuration: NSWorkspace.OpenConfiguration())
             }
         }
@@ -84,7 +87,7 @@ final class WindowFocusHandler: WindowFocusProtocol {
     private func findCursorApp() -> NSRunningApplication? {
         NSWorkspace.shared.runningApplications.first {
             $0.bundleIdentifier == AppConfig.CursorApp.bundleIdentifier ||
-            $0.localizedName == AppConfig.CursorApp.appName
+                $0.localizedName == AppConfig.CursorApp.appName
         }
     }
 }

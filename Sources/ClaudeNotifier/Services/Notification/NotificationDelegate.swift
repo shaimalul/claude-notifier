@@ -15,7 +15,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
+        _: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
@@ -28,7 +28,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
         if let cwd = userInfo["cwd"] as? String {
             let shouldFocus = actionIdentifier == UNNotificationDefaultActionIdentifier ||
-                             actionIdentifier == AppConfig.showActionIdentifier
+                actionIdentifier == AppConfig.showActionIdentifier
 
             if shouldFocus {
                 logger.log("Focusing Cursor for: \(cwd)", category: "NotifDelegate")
@@ -44,8 +44,8 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     }
 
     func userNotificationCenter(
-        _ center: UNUserNotificationCenter,
-        willPresent notification: UNNotification,
+        _: UNUserNotificationCenter,
+        willPresent _: UNNotification,
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         logger.log("willPresent called - notification arriving", category: "NotifDelegate")

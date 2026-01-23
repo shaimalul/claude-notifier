@@ -1,5 +1,5 @@
-import XCTest
 @testable import ClaudeNotifier
+import XCTest
 
 final class AppConfigTests: XCTestCase {
     func test_httpPort_hasExpectedValue() {

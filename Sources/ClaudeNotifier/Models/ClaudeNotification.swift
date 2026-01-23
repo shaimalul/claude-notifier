@@ -39,26 +39,26 @@ struct ClaudeNotification: Codable, Identifiable, Equatable {
     var typeDisplayName: String {
         switch type {
         case .permissionPrompt:
-            return "Permission Request"
+            "Permission Request"
         case .idlePrompt:
-            return "Waiting for Input"
+            "Waiting for Input"
         case .elicitationDialog:
-            return "Input Required"
+            "Input Required"
         case .unknown:
-            return "Notification"
+            "Notification"
         }
     }
 
     var typeIcon: String {
         switch type {
         case .permissionPrompt:
-            return "lock.shield"
+            "lock.shield"
         case .idlePrompt:
-            return "clock"
+            "clock"
         case .elicitationDialog:
-            return "text.bubble"
+            "text.bubble"
         case .unknown:
-            return "bell"
+            "bell"
         }
     }
 }

@@ -25,7 +25,7 @@ final class NotificationService: NotificationServiceProtocol {
         )
 
         UNUserNotificationCenter.current().add(request) { [weak self] error in
-            if let error = error {
+            if let error {
                 self?.logger.log("Notification error: \(error)", category: "Notification")
             }
         }

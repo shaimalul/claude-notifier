@@ -1,5 +1,5 @@
-import Foundation
 @testable import ClaudeNotifier
+import Foundation
 
 final class MockLogger: LoggerProtocol {
     var loggedMessages: [(message: String, category: String)] = []

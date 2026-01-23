@@ -1,5 +1,5 @@
-import XCTest
 @testable import ClaudeNotifier
+import XCTest
 
 final class FileLoggerTests: XCTestCase {
     var testFilePath: String!
@@ -26,19 +26,19 @@ final class FileLoggerTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: testFilePath))
     }
 
-    func test_write_appendsToExistingFile() {
+    func test_write_appendsToExistingFile() throws {
         sut.write("First message")
         sut.write("Second message")
 
-        let content = try! String(contentsOfFile: testFilePath, encoding: .utf8)
+        let content = try String(contentsOfFile: testFilePath, encoding: .utf8)
         XCTAssertTrue(content.contains("First message"))
         XCTAssertTrue(content.contains("Second message"))
     }
 
-    func test_write_addsNewlineAfterMessage() {
+    func test_write_addsNewlineAfterMessage() throws {
         sut.write("Test")
 
-        let content = try! String(contentsOfFile: testFilePath, encoding: .utf8)
+        let content = try String(contentsOfFile: testFilePath, encoding: .utf8)
         XCTAssertTrue(content.hasSuffix("\n"))
     }
 }

@@ -22,11 +22,11 @@ final class ResponseBuilder: ResponseBuilderProtocol {
 
     private func statusTextFor(code: Int) -> String {
         switch code {
-        case 200: return "OK"
-        case 400: return "Bad Request"
-        case 404: return "Not Found"
-        case 500: return "Internal Server Error"
-        default: return "Unknown"
+        case 200: "OK"
+        case 400: "Bad Request"
+        case 404: "Not Found"
+        case 500: "Internal Server Error"
+        default: "Unknown"
         }
     }
 }

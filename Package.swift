@@ -4,10 +4,10 @@ import PackageDescription
 let package = Package(
     name: "ClaudeNotifier",
     platforms: [
-        .macOS(.v13)
+        .macOS(.v13),
     ],
     products: [
-        .executable(name: "ClaudeNotifier", targets: ["ClaudeNotifier"])
+        .executable(name: "ClaudeNotifier", targets: ["ClaudeNotifier"]),
     ],
     dependencies: [],
     targets: [
@@ -16,13 +16,13 @@ let package = Package(
             dependencies: [],
             path: "Sources/ClaudeNotifier",
             resources: [
-                .copy("Resources")
+                .copy("Resources"),
             ]
         ),
         .testTarget(
             name: "ClaudeNotifierTests",
             dependencies: ["ClaudeNotifier"],
             path: "Tests/ClaudeNotifierTests"
-        )
+        ),
     ]
 )

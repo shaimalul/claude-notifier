@@ -6,7 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var notificationDelegate: NotificationDelegate?
     private let logger: LoggerProtocol = Logger.shared
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
+    func applicationDidFinishLaunching(_: Notification) {
         logger.log("App starting...", category: "AppDelegate")
 
         NSApp.setActivationPolicy(.accessory)
@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         logger.log("App setup complete", category: "AppDelegate")
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationWillTerminate(_: Notification) {
         httpServer?.stop()
     }
 

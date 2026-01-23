@@ -1,5 +1,5 @@
-import Foundation
 @testable import ClaudeNotifier
+import Foundation
 
 final class MockResponseBuilder: ResponseBuilderProtocol {
     var buildCalls: [(statusCode: Int, body: String)] = []
