@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build-release:
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Build Release
+        run: |
+          swift build -c release
+          ./scripts/create-app-bundle.sh
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist
+          # Create a temporary directory for DMG contents
+          mkdir -p /tmp/dmg-contents
+          cp -R .build/ClaudeNotifier.app /tmp/dmg-contents/
+
+          hdiutil create -volname "ClaudeNotifier" \
+            -srcfolder /tmp/dmg-contents \
+            -ov -format UDZO \
+            dist/ClaudeNotifier-${{ github.ref_name }}.dmg
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/ClaudeNotifier-*.dmg
+          generate_release_notes: true
