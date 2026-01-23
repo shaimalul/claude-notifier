@@ -10,6 +10,10 @@ final class RequestHandler: RequestHandlerProtocol {
     private let responseBuilder: ResponseBuilderProtocol
     private let logger: LoggerProtocol
 
+    // HTTP validation constants
+    private let validMethods = ["GET", "POST", "HEAD", "OPTIONS"]
+    private let maxJSONPayloadBytes = 8192
+
     init(
         onNotification: @escaping (ClaudeNotification) -> Void,
         responseBuilder: ResponseBuilderProtocol = ResponseBuilder(),
@@ -21,21 +25,42 @@ final class RequestHandler: RequestHandlerProtocol {
     }
 
     func handle(request: String, connection: NWConnection) {
+        guard let parsed = parseRequest(request, connection: connection) else { return }
+        routeRequest(method: parsed.method, path: parsed.path, request: request, connection: connection)
+    }
+
+    private func parseRequest(_ request: String, connection: NWConnection) -> (method: String, path: String)? {
         let lines = request.components(separatedBy: "\r\n")
         guard let requestLine = lines.first else {
             sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Invalid request\"}")
-            return
+            return nil
         }
 
         let parts = requestLine.components(separatedBy: " ")
-        guard parts.count >= 2 else {
-            sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Invalid request\"}")
-            return
+        guard parts.count == 3 else {
+            sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Invalid request line\"}")
+            return nil
         }
 
-        let method = parts[0]
-        let path = parts[1]
+        guard parts[2].hasPrefix("HTTP/1.") else {
+            sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Unsupported HTTP version\"}")
+            return nil
+        }
 
+        guard validMethods.contains(parts[0]) else {
+            sendResponse(connection: connection, statusCode: 405, body: "{\"error\":\"Method not allowed\"}")
+            return nil
+        }
+
+        guard !parts[1].contains(".."), parts[1].hasPrefix("/") else {
+            sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Invalid path\"}")
+            return nil
+        }
+
+        return (parts[0], parts[1])
+    }
+
+    private func routeRequest(method: String, path: String, request: String, connection: NWConnection) {
         switch (method, path) {
         case ("POST", "/notify"):
             handleNotifyRequest(request: request, connection: connection)
@@ -48,10 +73,18 @@ final class RequestHandler: RequestHandlerProtocol {
 
     private func handleNotifyRequest(request: String, connection: NWConnection) {
         let parts = request.components(separatedBy: "\r\n\r\n")
-        guard parts.count >= 2,
-              let jsonData = parts[1].data(using: .utf8)
-        else {
+        guard parts.count >= 2 else {
             sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Missing body\"}")
+            return
+        }
+
+        let bodyString = parts[1]
+
+        // Validate payload size
+        guard let jsonData = bodyString.data(using: .utf8),
+              jsonData.count <= maxJSONPayloadBytes
+        else {
+            sendResponse(connection: connection, statusCode: 413, body: "{\"error\":\"Payload too large\"}")
             return
         }
 
@@ -65,7 +98,7 @@ final class RequestHandler: RequestHandlerProtocol {
 
             sendResponse(connection: connection, statusCode: 200, body: "{\"status\":\"received\"}")
         } catch {
-            logger.log("Failed to parse notification: \(error)", category: "HTTP")
+            logger.log("Failed to parse notification: Invalid JSON format", category: "HTTP")
             sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Invalid JSON\"}")
         }
     }
