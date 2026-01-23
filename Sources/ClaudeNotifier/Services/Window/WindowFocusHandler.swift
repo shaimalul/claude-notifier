@@ -1,6 +1,9 @@
 import AppKit
 import Foundation
 
+// Cache the key at file scope to avoid repeated retain/release calls
+private let kAXTrustedKey = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
+
 final class WindowFocusHandler: WindowFocusProtocol {
     static let shared = WindowFocusHandler()
 
@@ -24,12 +27,12 @@ final class WindowFocusHandler: WindowFocusProtocol {
     }
 
     func checkAccessibilityPermissions() -> Bool {
-        let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
+        let options = [kAXTrustedKey: true] as CFDictionary
         return AXIsProcessTrustedWithOptions(options)
     }
 
     func requestAccessibilityPermissions() {
-        let options = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true] as CFDictionary
+        let options = [kAXTrustedKey: true] as CFDictionary
         _ = AXIsProcessTrustedWithOptions(options)
     }
 
@@ -41,27 +44,40 @@ final class WindowFocusHandler: WindowFocusProtocol {
 
         let appElement = AXUIElementCreateApplication(cursorApp.processIdentifier)
 
-        var windowsRef: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef)
-
-        guard result == .success, let windows = windowsRef as? [AXUIElement] else {
+        guard let windows = getAppWindows(appElement: appElement) else {
             logger.log("Could not get windows (need accessibility permission)", category: "WindowFocus")
             return false
         }
 
+        return focusMatchingWindow(windows: windows, projectName: projectName, appElement: appElement)
+    }
+
+    private func getAppWindows(appElement: AXUIElement) -> [AXUIElement]? {
+        var windowsRef: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef)
+        guard result == .success else { return nil }
+        return windowsRef as? [AXUIElement]
+    }
+
+    private func focusMatchingWindow(
+        windows: [AXUIElement],
+        projectName: String,
+        appElement: AXUIElement
+    ) -> Bool {
         var windowNames: [String] = []
+
         for window in windows {
             var titleRef: CFTypeRef?
-            if AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &titleRef) == .success,
-               let title = titleRef as? String
-            {
-                windowNames.append(title)
-                if title.contains(projectName) {
-                    AXUIElementPerformAction(window, kAXRaiseAction as CFString)
-                    AXUIElementSetAttributeValue(appElement, kAXFrontmostAttribute as CFString, true as CFTypeRef)
-                    logger.log("Focused window: \(title)", category: "WindowFocus")
-                    return true
-                }
+            guard AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &titleRef) == .success,
+                  let title = titleRef as? String
+            else { continue }
+
+            windowNames.append(title)
+            if title.contains(projectName) {
+                AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+                AXUIElementSetAttributeValue(appElement, kAXFrontmostAttribute as CFString, true as CFTypeRef)
+                logger.log("Focused window: \(title)", category: "WindowFocus")
+                return true
             }
         }
 
