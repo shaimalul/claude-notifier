@@ -21,6 +21,31 @@ log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_step() { echo -e "${BLUE}[STEP]${NC} $1"; }
 
+# Validate path is within HOME and not a symlink (security: prevents path traversal)
+validate_safe_path() {
+    local path="$1"
+    local parent_dir
+    parent_dir=$(dirname "$path")
+
+    # Resolve parent directory to absolute path
+    if [ -d "$parent_dir" ]; then
+        local resolved
+        resolved=$(cd "$parent_dir" 2>/dev/null && pwd -P)/$(basename "$path")
+
+        # Ensure path is within HOME
+        if [[ "$resolved" != "$HOME"* ]]; then
+            log_error "Path must be within HOME: $path"
+            exit 1
+        fi
+
+        # Check if path is a symlink (potential security risk)
+        if [ -L "$path" ]; then
+            log_error "Path is a symlink (security risk): $path"
+            exit 1
+        fi
+    fi
+}
+
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
@@ -90,6 +115,10 @@ log_info "App bundle created"
 
 # Step 5: Install app
 log_step "Installing app to $INSTALL_DIR..."
+
+# Validate paths before file operations (security: prevents path traversal)
+validate_safe_path "$INSTALL_DIR"
+
 mkdir -p "$INSTALL_DIR"
 
 SOURCE_APP="$PROJECT_DIR/.build/release/$APP_NAME.app"
