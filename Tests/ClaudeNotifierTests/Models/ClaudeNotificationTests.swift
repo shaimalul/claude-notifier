@@ -1,5 +1,5 @@
-import XCTest
 @testable import ClaudeNotifier
+import XCTest
 
 final class ClaudeNotificationTests: XCTestCase {
     func test_init_setsAllProperties() {
@@ -8,7 +8,7 @@ final class ClaudeNotificationTests: XCTestCase {
             cwd: "/Users/test/project",
             sessionId: "abc123",
             type: "permission_prompt",
-            timestamp: 1234567890
+            timestamp: 1_234_567_890
         )
 
         XCTAssertEqual(notification.message, "Test message")
@@ -87,7 +87,7 @@ final class ClaudeNotificationTests: XCTestCase {
     }
 
     func test_timestamp_convertsFromTimeInterval() {
-        let timestamp: TimeInterval = 1700000000
+        let timestamp: TimeInterval = 1_700_000_000
         let notification = ClaudeNotification(
             message: "Test",
             cwd: "/test",

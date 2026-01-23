@@ -49,7 +49,8 @@ final class RequestHandler: RequestHandlerProtocol {
     private func handleNotifyRequest(request: String, connection: NWConnection) {
         let parts = request.components(separatedBy: "\r\n\r\n")
         guard parts.count >= 2,
-              let jsonData = parts[1].data(using: .utf8) else {
+              let jsonData = parts[1].data(using: .utf8)
+        else {
             sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Missing body\"}")
             return
         }

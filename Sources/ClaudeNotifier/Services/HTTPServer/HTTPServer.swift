@@ -50,7 +50,7 @@ final class HTTPServer: HTTPServerProtocol {
         switch state {
         case .ready:
             logger.log("HTTP Server listening on port \(port)", category: "HTTP")
-        case .failed(let error):
+        case let .failed(error):
             logger.log("HTTP Server failed: \(error)", category: "HTTP")
         case .cancelled:
             logger.log("HTTP Server cancelled", category: "HTTP")
@@ -70,8 +70,9 @@ final class HTTPServer: HTTPServerProtocol {
 
     private func receiveData(from connection: NWConnection) {
         connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
-            if let data = data, !data.isEmpty,
-               let request = String(data: data, encoding: .utf8) {
+            if let data, !data.isEmpty,
+               let request = String(data: data, encoding: .utf8)
+            {
                 self?.requestHandler.handle(request: request, connection: connection)
             }
 

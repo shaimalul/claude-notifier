@@ -1,5 +1,5 @@
-import XCTest
 @testable import ClaudeNotifier
+import XCTest
 
 final class NotificationPayloadTests: XCTestCase {
     func test_decodingFromJSON_succeeds() throws {
@@ -20,7 +20,7 @@ final class NotificationPayloadTests: XCTestCase {
         XCTAssertEqual(payload.cwd, "/Users/test/project")
         XCTAssertEqual(payload.sessionId, "session-123")
         XCTAssertEqual(payload.type, "permission_prompt")
-        XCTAssertEqual(payload.timestamp, 1700000000)
+        XCTAssertEqual(payload.timestamp, 1_700_000_000)
     }
 
     func test_toClaudeNotification_createsCorrectNotification() {
@@ -29,7 +29,7 @@ final class NotificationPayloadTests: XCTestCase {
             cwd: "/Users/test/my-app",
             sessionId: "abc-123",
             type: "idle_prompt",
-            timestamp: 1700000000
+            timestamp: 1_700_000_000
         )
 
         let notification = payload.toClaudeNotification()

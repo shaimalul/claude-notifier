@@ -1,5 +1,5 @@
-import Foundation
 @testable import ClaudeNotifier
+import Foundation
 
 final class MockFileLogger: FileLoggerProtocol {
     var writtenMessages: [String] = []
