@@ -8,6 +8,12 @@ final class HTTPServer: HTTPServerProtocol {
     private let queue = DispatchQueue(label: "com.claudenotifier.httpserver")
     private let logger: LoggerProtocol
 
+    // Rate limiting properties
+    private let maxConcurrentConnections = 10
+    private var activeConnectionCount = 0
+    private let connectionLock = NSLock()
+    private let requestTimeout: TimeInterval = 5.0
+
     init(
         port: UInt16 = AppConfig.httpPort,
         onNotification: @escaping (ClaudeNotification) -> Void,
@@ -60,12 +66,39 @@ final class HTTPServer: HTTPServerProtocol {
     }
 
     private func handleConnection(_ connection: NWConnection) {
+        // Rate limiting: reject if too many concurrent connections
+        connectionLock.lock()
+        guard activeConnectionCount < maxConcurrentConnections else {
+            connectionLock.unlock()
+            logger.log("Rejected connection: max limit reached", category: "HTTP")
+            connection.cancel()
+            return
+        }
+        activeConnectionCount += 1
+        connectionLock.unlock()
+
         connection.stateUpdateHandler = { [weak self] state in
-            if case .ready = state {
+            switch state {
+            case .ready:
                 self?.receiveData(from: connection)
+            case .cancelled, .failed:
+                self?.decrementConnectionCount()
+            default:
+                break
             }
         }
         connection.start(queue: queue)
+
+        // Request timeout
+        DispatchQueue.global().asyncAfter(deadline: .now() + requestTimeout) { [weak connection] in
+            connection?.cancel()
+        }
+    }
+
+    private func decrementConnectionCount() {
+        connectionLock.lock()
+        activeConnectionCount = max(0, activeConnectionCount - 1)
+        connectionLock.unlock()
     }
 
     private func receiveData(from connection: NWConnection) {
