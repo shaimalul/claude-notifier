@@ -9,7 +9,15 @@ enum AppConfig {
     static let showActionIdentifier = "SHOW_ACTION"
 
     enum CursorApp {
-        static let bundleIdentifier = "com.todesktop.230313mzl4w4u92"
-        static let appName = "Cursor"
+        // Configurable via environment variable for custom IDE support
+        static var bundleIdentifier: String {
+            ProcessInfo.processInfo.environment["CLAUDE_NOTIFIER_APP_BUNDLE_ID"]
+                ?? "com.todesktop.230313mzl4w4u92"
+        }
+
+        static var appName: String {
+            ProcessInfo.processInfo.environment["CLAUDE_NOTIFIER_APP_NAME"]
+                ?? "Cursor"
+        }
     }
 }
