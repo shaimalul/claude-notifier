@@ -34,9 +34,19 @@ final class NotificationService: NotificationServiceProtocol {
     }
 
     private func playSound() {
+        guard FileManager.default.fileExists(atPath: AppConfig.soundFilePath) else {
+            logger.log("Sound file not found: \(AppConfig.soundFilePath)", category: "Notification")
+            return
+        }
+
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/afplay")
         process.arguments = ["-v", AppConfig.soundVolume, AppConfig.soundFilePath]
-        try? process.run()
+
+        do {
+            try process.run()
+        } catch {
+            logger.log("Failed to play sound: \(error.localizedDescription)", category: "Notification")
+        }
     }
 }
