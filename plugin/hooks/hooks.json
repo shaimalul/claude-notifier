@@ -1,7 +1,7 @@
 {
   "description": "Hooks to notify macOS menu bar app when Claude Code needs attention",
   "hooks": {
-    "Notification": [
+    "PermissionRequest": [
       {
         "hooks": [
           {
