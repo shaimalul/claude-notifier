@@ -57,8 +57,6 @@ final class WindowFocusHandler: WindowFocusProtocol {
         }
     }
 
-    // Derive CLI from the running app's own bundle — avoids symlinks like
-    // /usr/local/bin/code that may point to a different IDE (e.g. Cursor).
     private func resolveCLI(for app: NSRunningApplication) -> String? {
         guard let bundleURL = app.bundleURL else { return nil }
         let binDir = bundleURL.appendingPathComponent("Contents/Resources/app/bin")
