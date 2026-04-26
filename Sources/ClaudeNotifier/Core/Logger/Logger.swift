@@ -5,11 +5,7 @@ final class Logger: LoggerProtocol {
 
     private let fileLogger: FileLoggerProtocol
 
-    // Cache date formatter for performance (avoid creating per log call)
-    private let dateFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        return formatter
-    }()
+    private let dateFormatter = ISO8601DateFormatter()
 
     init(fileLogger: FileLoggerProtocol) {
         self.fileLogger = fileLogger

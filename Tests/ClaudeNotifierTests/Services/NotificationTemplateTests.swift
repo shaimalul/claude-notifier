@@ -1,8 +1,6 @@
 @testable import ClaudeNotifier
 import XCTest
 
-// Tests the template rendering logic used by NotificationService
-// by validating the token substitution contract
 final class NotificationTemplateTests: XCTestCase {
     private func applyTemplate(_ template: String, to notification: ClaudeNotification) -> String {
         template

@@ -14,64 +14,53 @@ final class ResponseBuilderTests: XCTestCase {
         super.tearDown()
     }
 
-    func test_build_with200_returnsOKStatus() {
-        let result = sut.build(statusCode: 200, body: "{\"status\":\"ok\"}")
-
-        XCTAssertNotNil(result)
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_with200_returnsOKStatus() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 200, body: "{\"status\":\"ok\"}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("HTTP/1.1 200 OK"))
     }
 
-    func test_build_with400_returnsBadRequestStatus() {
-        let result = sut.build(statusCode: 400, body: "{\"error\":\"bad\"}")
-
-        XCTAssertNotNil(result)
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_with400_returnsBadRequestStatus() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 400, body: "{\"error\":\"bad\"}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("HTTP/1.1 400 Bad Request"))
     }
 
-    func test_build_with404_returnsNotFoundStatus() {
-        let result = sut.build(statusCode: 404, body: "{\"error\":\"not found\"}")
-
-        XCTAssertNotNil(result)
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_with404_returnsNotFoundStatus() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 404, body: "{\"error\":\"not found\"}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("HTTP/1.1 404 Not Found"))
     }
 
-    func test_build_includesContentTypeHeader() {
-        let result = sut.build(statusCode: 200, body: "{}")
-
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_includesContentTypeHeader() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 200, body: "{}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("Content-Type: application/json"))
     }
 
-    func test_build_includesCorrectContentLength() {
+    func test_build_includesCorrectContentLength() throws {
         let body = "{\"test\":\"value\"}"
-        let result = sut.build(statusCode: 200, body: body)
-
-        let responseString = String(data: result!, encoding: .utf8)!
+        let result = try XCTUnwrap(sut.build(statusCode: 200, body: body))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("Content-Length: \(body.utf8.count)"))
     }
 
-    func test_build_includesConnectionCloseHeader() {
-        let result = sut.build(statusCode: 200, body: "{}")
-
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_includesConnectionCloseHeader() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 200, body: "{}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("Connection: close"))
     }
 
-    func test_build_includesBodyContent() {
+    func test_build_includesBodyContent() throws {
         let body = "{\"message\":\"hello world\"}"
-        let result = sut.build(statusCode: 200, body: body)
-
-        let responseString = String(data: result!, encoding: .utf8)!
+        let result = try XCTUnwrap(sut.build(statusCode: 200, body: body))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains(body))
     }
 
-    func test_build_withUnknownStatusCode_returnsUnknownText() {
-        let result = sut.build(statusCode: 999, body: "{}")
-
-        let responseString = String(data: result!, encoding: .utf8)!
+    func test_build_withUnknownStatusCode_returnsUnknownText() throws {
+        let result = try XCTUnwrap(sut.build(statusCode: 999, body: "{}"))
+        let responseString = try XCTUnwrap(String(data: result, encoding: .utf8))
         XCTAssertTrue(responseString.contains("HTTP/1.1 999 Unknown"))
     }
 }

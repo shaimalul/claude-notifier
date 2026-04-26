@@ -35,11 +35,10 @@ final class LoggerTests: XCTestCase {
         XCTAssertTrue(mockFileLogger.hasWritten(containing: "Hello world"))
     }
 
-    func test_log_includesTimestamp() {
+    func test_log_includesTimestamp() throws {
         sut.log("Test", category: "Test")
 
-        let message = mockFileLogger.writtenMessages.first!
-        // ISO8601 timestamps start with year, e.g., "2024-"
+        let message = try XCTUnwrap(mockFileLogger.writtenMessages.first)
         XCTAssertTrue(message.contains("[20"))
     }
 

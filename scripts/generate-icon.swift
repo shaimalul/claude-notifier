@@ -24,7 +24,7 @@ func makeIcon(px: Int) -> NSImage {
     let size = CGFloat(px)
     let bounds = CGRect(origin: .zero, size: CGSize(width: size, height: size))
 
-    let image = NSImage(size: bounds.size, flipped: false) { _ in
+    NSImage(size: bounds.size, flipped: false) { _ in
         guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
 
         // macOS standard rounded rect clip
@@ -74,7 +74,6 @@ func makeIcon(px: Int) -> NSImage {
 
         return true
     }
-    return image
 }
 
 let outputDir = URL(fileURLWithPath: "/tmp/LukeIcon")
