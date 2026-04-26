@@ -59,7 +59,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             identifier: AppConfig.permissionCategoryIdentifier,
             actions: [
                 UNNotificationAction(identifier: AppConfig.allowActionIdentifier, title: "Allow", options: []),
-                UNNotificationAction(identifier: AppConfig.denyActionIdentifier, title: "Deny", options: [.destructive]),
+                UNNotificationAction(
+                    identifier: AppConfig.denyActionIdentifier,
+                    title: "Deny",
+                    options: [.destructive]
+                )
             ],
             intentIdentifiers: [],
             options: []
@@ -69,10 +73,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func requestNotificationPermission(completion: @escaping () -> Void) {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .provisional]) { [weak self] granted, error in
+        UNUserNotificationCenter.current().requestAuthorization(options: [
+            .alert,
+            .sound,
+            .provisional
+        ]) { [weak self] granted, error in
             DispatchQueue.main.async {
                 if !granted {
-                    self?.logger.log("Notification permission denied: \(error?.localizedDescription ?? "unknown")", category: "AppDelegate")
+                    self?.logger.log(
+                        "Notification permission denied: \(error?.localizedDescription ?? "unknown")",
+                        category: "AppDelegate"
+                    )
                 }
                 completion()
             }

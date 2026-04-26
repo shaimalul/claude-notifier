@@ -40,7 +40,10 @@ final class RequestHandlerSuppressionTests: XCTestCase {
 
     func test_notify_suppressed_whenPaused() {
         SettingsStore.shared.settings.isPaused = true
-        makeHandler().handle(request: validNotifyRequest(), connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp))
+        makeHandler().handle(
+            request: validNotifyRequest(),
+            connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp)
+        )
         XCTAssertEqual(mockResponseBuilder.buildCalls.first?.statusCode, 200)
         XCTAssertTrue(mockResponseBuilder.buildCalls.first?.body.contains("suppressed") ?? false)
         XCTAssertTrue(receivedNotifications.isEmpty)
@@ -48,7 +51,10 @@ final class RequestHandlerSuppressionTests: XCTestCase {
 
     func test_notify_suppressed_whenSnoozed() {
         ActionDispatcher.shared.activateSnooze(minutes: 5)
-        makeHandler().handle(request: validNotifyRequest(), connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp))
+        makeHandler().handle(
+            request: validNotifyRequest(),
+            connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp)
+        )
         XCTAssertEqual(mockResponseBuilder.buildCalls.first?.statusCode, 200)
         XCTAssertTrue(mockResponseBuilder.buildCalls.first?.body.contains("suppressed") ?? false)
         XCTAssertTrue(receivedNotifications.isEmpty)
@@ -58,14 +64,20 @@ final class RequestHandlerSuppressionTests: XCTestCase {
         SettingsStore.shared.settings.dndEnabled = true
         SettingsStore.shared.settings.dndStartHour = 0
         SettingsStore.shared.settings.dndEndHour = 23
-        makeHandler().handle(request: validNotifyRequest(), connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp))
+        makeHandler().handle(
+            request: validNotifyRequest(),
+            connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp)
+        )
         XCTAssertEqual(mockResponseBuilder.buildCalls.first?.statusCode, 200)
         XCTAssertTrue(mockResponseBuilder.buildCalls.first?.body.contains("suppressed") ?? false)
         XCTAssertTrue(receivedNotifications.isEmpty)
     }
 
     func test_notify_notSuppressed_withDefaultSettings() {
-        makeHandler().handle(request: validNotifyRequest(), connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp))
+        makeHandler().handle(
+            request: validNotifyRequest(),
+            connection: NWConnection(host: "127.0.0.1", port: 1, using: .tcp)
+        )
         XCTAssertEqual(mockResponseBuilder.buildCalls.first?.statusCode, 200)
         XCTAssertFalse(mockResponseBuilder.buildCalls.first?.body.contains("suppressed") ?? true)
     }

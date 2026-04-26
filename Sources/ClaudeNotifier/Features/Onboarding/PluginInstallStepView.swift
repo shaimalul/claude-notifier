@@ -56,7 +56,7 @@ struct PluginInstallStepView: View {
                     .foregroundColor(.secondary)
             }
             .padding(.top, 8)
-        case .success(let message):
+        case let .success(message):
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
@@ -64,7 +64,7 @@ struct PluginInstallStepView: View {
                     .foregroundColor(.green)
             }
             .padding(.top, 8)
-        case .failed(let message):
+        case let .failed(message):
             VStack(spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle.fill")
@@ -95,9 +95,9 @@ struct PluginInstallStepView: View {
 
         await MainActor.run {
             switch result {
-            case .success(let installResult):
+            case let .success(installResult):
                 installState = .success(messageFor(installResult))
-            case .failure(let error):
+            case let .failure(error):
                 installState = .failed("Installation failed: \(error.localizedDescription)")
             }
         }
@@ -105,9 +105,9 @@ struct PluginInstallStepView: View {
 
     private func messageFor(_ result: PluginInstaller.InstallResult) -> String {
         switch result {
-        case .installed: return "Plugin installed successfully"
-        case .alreadyInstalled: return "Plugin already installed"
-        case .replacedDevInstall: return "Replaced dev install with release plugin"
+        case .installed: "Plugin installed successfully"
+        case .alreadyInstalled: "Plugin already installed"
+        case .replacedDevInstall: "Replaced dev install with release plugin"
         }
     }
 }

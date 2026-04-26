@@ -11,7 +11,7 @@ final class CustomActionTests: XCTestCase {
     func test_otherKinds_doNotRequireForeground() {
         let backgroundKinds: [CustomAction.Kind] = [
             .copyCwd, .openTerminal, .revealInFinder,
-            .snooze5m, .snooze15m, .snooze60m,
+            .snooze5m, .snooze15m, .snooze60m
         ]
         for kind in backgroundKinds {
             XCTAssertFalse(kind.requiresForeground, "\(kind) should not require foreground")

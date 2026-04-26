@@ -35,7 +35,7 @@ struct OnboardingRootView: View {
 
     private var stepIndicator: some View {
         HStack(spacing: 8) {
-            ForEach(0..<totalSteps, id: \.self) { index in
+            ForEach(0 ..< totalSteps, id: \.self) { index in
                 Circle()
                     .fill(index == currentStep ? Color.accentColor : Color.secondary.opacity(0.3))
                     .frame(width: 8, height: 8)
