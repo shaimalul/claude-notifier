@@ -8,7 +8,9 @@ final class UpdateService {
 
     private init() {}
 
-    var canCheckForUpdates: Bool { true }
+    var canCheckForUpdates: Bool {
+        true
+    }
 
     func checkForUpdates() {
         guard let url = URL(string: Self.releasesURL) else { return }
