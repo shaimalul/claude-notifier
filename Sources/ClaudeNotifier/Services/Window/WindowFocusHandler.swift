@@ -1,7 +1,6 @@
 import AppKit
 import Foundation
 
-// Cache the key at file scope to avoid repeated retain/release calls
 private let kAXTrustedKey = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
 
 final class WindowFocusHandler: WindowFocusProtocol {
@@ -13,97 +12,145 @@ final class WindowFocusHandler: WindowFocusProtocol {
         self.logger = logger
     }
 
-    func focusCursorWindow(forProjectPath path: String) {
-        logger.log("Attempting to focus Cursor for path: \(path)", category: "WindowFocus")
-
-        activateCursorApp()
-
-        let projectName = URL(fileURLWithPath: path).lastPathComponent
-        if focusWindowUsingAccessibility(projectName: projectName) {
-            logger.log("Focused specific window: \(projectName)", category: "WindowFocus")
-        } else {
-            logger.log("Could not focus specific window, but Cursor is activated", category: "WindowFocus")
+    func focusIDEWindow(forProjectPath path: String, ideBundleId: String?) {
+        guard let app = resolveRunningIDE(hintBundleId: ideBundleId, forPath: path) else {
+            logger.log("No supported IDE is running", category: "WindowFocus")
+            return
         }
+
+        let bundleId = app.bundleIdentifier ?? ""
+        let projectName = URL(fileURLWithPath: path).lastPathComponent
+        logger.log("Focusing \(app.localizedName ?? "IDE") on project: \(projectName)", category: "WindowFocus")
+
+        // Primary: use the IDE CLI to jump directly to the right folder window
+        if openViaCLI(app: app, path: path) {
+            logger.log("Opened via CLI", category: "WindowFocus")
+            return
+        }
+
+        // Fallback: activate app then try AX window matching
+        activateAndFocus(app: app, projectName: projectName)
     }
 
     func checkAccessibilityPermissions() -> Bool {
-        let options = [kAXTrustedKey: true] as CFDictionary
-        return AXIsProcessTrustedWithOptions(options)
+        AXIsProcessTrustedWithOptions([kAXTrustedKey: true] as CFDictionary)
     }
 
     func requestAccessibilityPermissions() {
-        let options = [kAXTrustedKey: true] as CFDictionary
-        _ = AXIsProcessTrustedWithOptions(options)
+        _ = AXIsProcessTrustedWithOptions([kAXTrustedKey: true] as CFDictionary)
     }
 
-    private func focusWindowUsingAccessibility(projectName: String) -> Bool {
-        guard let cursorApp = findCursorApp() else {
-            logger.log("Cursor not running", category: "WindowFocus")
+    // MARK: - CLI approach (no accessibility required)
+
+    private func openViaCLI(app: NSRunningApplication, path: String) -> Bool {
+        guard let cliPath = resolveCLI(for: app) else { return false }
+        logger.log("Using CLI: \(cliPath)", category: "WindowFocus")
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: cliPath)
+        process.arguments = ["--reuse-window", path]
+        do {
+            try process.run()
+            return true
+        } catch {
+            logger.log("CLI launch failed: \(error)", category: "WindowFocus")
             return false
         }
-
-        let appElement = AXUIElementCreateApplication(cursorApp.processIdentifier)
-
-        guard let windows = getAppWindows(appElement: appElement) else {
-            logger.log("Could not get windows (need accessibility permission)", category: "WindowFocus")
-            return false
-        }
-
-        return focusMatchingWindow(windows: windows, projectName: projectName, appElement: appElement)
     }
 
-    private func getAppWindows(appElement: AXUIElement) -> [AXUIElement]? {
-        var windowsRef: CFTypeRef?
-        let result = AXUIElementCopyAttributeValue(appElement, kAXWindowsAttribute as CFString, &windowsRef)
-        guard result == .success else { return nil }
-        return windowsRef as? [AXUIElement]
-    }
-
-    private func focusMatchingWindow(
-        windows: [AXUIElement],
-        projectName: String,
-        appElement: AXUIElement
-    ) -> Bool {
-        var windowNames: [String] = []
-
-        for window in windows {
-            var titleRef: CFTypeRef?
-            guard AXUIElementCopyAttributeValue(window, kAXTitleAttribute as CFString, &titleRef) == .success,
-                  let title = titleRef as? String
-            else { continue }
-
-            windowNames.append(title)
-            if title.contains(projectName) {
-                AXUIElementPerformAction(window, kAXRaiseAction as CFString)
-                AXUIElementSetAttributeValue(appElement, kAXFrontmostAttribute as CFString, true as CFTypeRef)
-                logger.log("Focused window: \(title)", category: "WindowFocus")
-                return true
+    // Derive CLI from the running app's own bundle — avoids symlinks like
+    // /usr/local/bin/code that may point to a different IDE (e.g. Cursor).
+    private func resolveCLI(for app: NSRunningApplication) -> String? {
+        guard let bundleURL = app.bundleURL else { return nil }
+        let binDir = bundleURL.appendingPathComponent("Contents/Resources/app/bin")
+        for name in ["code", "cursor"] {
+            let path = binDir.appendingPathComponent(name).path
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return path
             }
         }
+        return nil
+    }
 
-        logger.log("Windows found: \(windowNames.joined(separator: ", "))", category: "WindowFocus")
-        logger.log("No window matching '\(projectName)'", category: "WindowFocus")
+    // MARK: - Activate + AX fallback
+
+    private func activateAndFocus(app: NSRunningApplication, projectName: String) {
+        guard let url = app.bundleURL else {
+            app.activate(options: [.activateIgnoringOtherApps])
+            return
+        }
+
+        let config = NSWorkspace.OpenConfiguration()
+        config.activates = true
+
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { [weak self] _, error in
+            if let error {
+                self?.logger.log("openApplication error: \(error)", category: "WindowFocus")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                _ = self?.focusWindowUsingAccessibility(projectName: projectName, runningApp: app)
+            }
+        }
+    }
+
+    // MARK: - IDE resolution
+
+    private func resolveRunningIDE(hintBundleId: String?, forPath path: String) -> NSRunningApplication? {
+        if let override = AppConfig.IDE.overrideBundleIdentifier,
+           let app = findRunningApp(bundleId: override) { return app }
+
+        if let hint = hintBundleId,
+           let app = findRunningApp(bundleId: hint) { return app }
+
+        let projectName = URL(fileURLWithPath: path).lastPathComponent
+        for (bundleId, _) in AppConfig.IDE.supported {
+            guard let app = findRunningApp(bundleId: bundleId) else { continue }
+            if ideHasWindowForProject(app: app, projectName: projectName) { return app }
+        }
+
+        for (bundleId, _) in AppConfig.IDE.supported {
+            if let app = findRunningApp(bundleId: bundleId) { return app }
+        }
+        return nil
+    }
+
+    private func findRunningApp(bundleId: String) -> NSRunningApplication? {
+        NSWorkspace.shared.runningApplications.first { $0.bundleIdentifier == bundleId }
+    }
+
+    private func ideHasWindowForProject(app: NSRunningApplication, projectName: String) -> Bool {
+        let el = AXUIElementCreateApplication(app.processIdentifier)
+        guard let windows = axWindows(of: el) else { return false }
+        return windows.contains { axTitle($0)?.contains(projectName) == true }
+    }
+
+    // MARK: - AX helpers
+
+    private func focusWindowUsingAccessibility(projectName: String, runningApp: NSRunningApplication) -> Bool {
+        let el = AXUIElementCreateApplication(runningApp.processIdentifier)
+        guard let windows = axWindows(of: el) else {
+            logger.log("AX unavailable - accessibility permission not granted", category: "WindowFocus")
+            return false
+        }
+        for window in windows {
+            guard let title = axTitle(window), title.contains(projectName) else { continue }
+            AXUIElementPerformAction(window, kAXRaiseAction as CFString)
+            AXUIElementSetAttributeValue(el, kAXFrontmostAttribute as CFString, true as CFTypeRef)
+            logger.log("AX raised window: \(title)", category: "WindowFocus")
+            return true
+        }
+        logger.log("No AX window matched '\(projectName)'", category: "WindowFocus")
         return false
     }
 
-    private func activateCursorApp() {
-        if let cursorApp = findCursorApp() {
-            cursorApp.activate(options: [.activateIgnoringOtherApps])
-            logger.log("Activated Cursor app", category: "WindowFocus")
-        } else {
-            logger.log("Cursor app not found, trying to launch...", category: "WindowFocus")
-            if let cursorURL = NSWorkspace.shared
-                .urlForApplication(withBundleIdentifier: AppConfig.CursorApp.bundleIdentifier)
-            {
-                NSWorkspace.shared.openApplication(at: cursorURL, configuration: NSWorkspace.OpenConfiguration())
-            }
-        }
+    private func axWindows(of element: AXUIElement) -> [AXUIElement]? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXWindowsAttribute as CFString, &ref) == .success else { return nil }
+        return ref as? [AXUIElement]
     }
 
-    private func findCursorApp() -> NSRunningApplication? {
-        NSWorkspace.shared.runningApplications.first {
-            $0.bundleIdentifier == AppConfig.CursorApp.bundleIdentifier ||
-                $0.localizedName == AppConfig.CursorApp.appName
-        }
+    private func axTitle(_ element: AXUIElement) -> String? {
+        var ref: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, kAXTitleAttribute as CFString, &ref) == .success else { return nil }
+        return ref as? String
     }
 }

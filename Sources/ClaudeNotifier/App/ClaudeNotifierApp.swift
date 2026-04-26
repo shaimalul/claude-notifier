@@ -5,8 +5,12 @@ struct ClaudeNotifierApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
-        Settings {
-            EmptyView()
+        MenuBarExtra("Claude Notifier", systemImage: "bell.badge.fill") {
+            MenuBarContentView()
+                .environmentObject(SettingsStore.shared)
+                .environmentObject(NotificationHistory.shared)
         }
+        .menuBarExtraStyle(.menu)
+
     }
 }

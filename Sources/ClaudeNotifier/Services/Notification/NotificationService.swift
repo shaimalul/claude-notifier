@@ -11,12 +11,26 @@ final class NotificationService: NotificationServiceProtocol {
     }
 
     func sendNotification(_ notification: ClaudeNotification) {
+        let settings = SettingsStore.shared.settings
+
+        guard settings.enabledEventTypes.contains(notification.type.rawValue) else {
+            logger.log("Event type '\(notification.type.rawValue)' suppressed", category: "Notification")
+            return
+        }
+
         let content = UNMutableNotificationContent()
-        content.title = notification.projectName
-        content.body = notification.message
+        content.title = render(template: settings.titleTemplate, notification: notification)
+        content.body = render(template: settings.bodyTemplate, notification: notification)
         content.sound = UNNotificationSound.default
-        content.userInfo = ["cwd": notification.cwd]
-        content.categoryIdentifier = AppConfig.notificationCategoryIdentifier
+        let isPermissionRequest = notification.responsePipe != nil
+        content.categoryIdentifier = isPermissionRequest
+            ? AppConfig.permissionCategoryIdentifier
+            : AppConfig.notificationCategoryIdentifier
+
+        var userInfo: [String: Any] = ["cwd": notification.cwd]
+        if let ideBundleId = notification.ideBundleId { userInfo["ideBundleId"] = ideBundleId }
+        if let pipe = notification.responsePipe { userInfo["responsePipe"] = pipe }
+        content.userInfo = userInfo
 
         let request = UNNotificationRequest(
             identifier: notification.id.uuidString,
@@ -30,18 +44,27 @@ final class NotificationService: NotificationServiceProtocol {
             }
         }
 
-        playSound()
+        if !settings.soundPath.isEmpty {
+            playSound(path: settings.soundPath, volume: settings.soundVolume)
+        }
     }
 
-    private func playSound() {
-        guard FileManager.default.fileExists(atPath: AppConfig.soundFilePath) else {
-            logger.log("Sound file not found: \(AppConfig.soundFilePath)", category: "Notification")
+    private func render(template: String, notification: ClaudeNotification) -> String {
+        template
+            .replacingOccurrences(of: "{project}", with: notification.projectName)
+            .replacingOccurrences(of: "{message}", with: notification.message)
+            .replacingOccurrences(of: "{sessionId}", with: notification.sessionId)
+    }
+
+    private func playSound(path: String, volume: Double) {
+        guard FileManager.default.fileExists(atPath: path) else {
+            logger.log("Sound file not found: \(path)", category: "Notification")
             return
         }
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/afplay")
-        process.arguments = ["-v", AppConfig.soundVolume, AppConfig.soundFilePath]
+        process.arguments = ["-v", String(volume), path]
 
         do {
             try process.run()

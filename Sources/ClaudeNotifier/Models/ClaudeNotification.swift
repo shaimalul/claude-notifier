@@ -7,6 +7,8 @@ struct ClaudeNotification: Codable, Identifiable, Equatable {
     let sessionId: String
     let type: NotificationType
     let timestamp: Date
+    let ideBundleId: String?
+    let responsePipe: String?
     var isRead: Bool
 
     enum NotificationType: String, Codable {
@@ -22,13 +24,15 @@ struct ClaudeNotification: Codable, Identifiable, Equatable {
         }
     }
 
-    init(message: String, cwd: String, sessionId: String, type: String, timestamp: TimeInterval) {
+    init(message: String, cwd: String, sessionId: String, type: String, timestamp: TimeInterval, ideBundleId: String? = nil, responsePipe: String? = nil) {
         self.id = UUID()
         self.message = message
         self.cwd = cwd
         self.sessionId = sessionId
         self.type = NotificationType(rawValue: type) ?? .unknown
         self.timestamp = Date(timeIntervalSince1970: timestamp)
+        self.ideBundleId = ideBundleId
+        self.responsePipe = responsePipe
         self.isRead = false
     }
 

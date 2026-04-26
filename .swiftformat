@@ -5,7 +5,7 @@
 --importgrouping alpha
 --semicolons never
 --header strip
---disable redundantSelf
+--disable redundantSelf,trailingCommas
 --enable isEmpty
 --enable sortImports
 --maxwidth 120

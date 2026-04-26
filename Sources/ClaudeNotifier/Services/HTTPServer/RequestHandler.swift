@@ -72,6 +72,12 @@ final class RequestHandler: RequestHandlerProtocol {
     }
 
     private func handleNotifyRequest(request: String, connection: NWConnection) {
+        let settings = SettingsStore.shared.settings
+        if settings.isPaused || settings.isCurrentlyDND() || ActionDispatcher.shared.isSnoozed {
+            sendResponse(connection: connection, statusCode: 200, body: "{\"status\":\"suppressed\"}")
+            return
+        }
+
         let parts = request.components(separatedBy: "\r\n\r\n")
         guard parts.count >= 2 else {
             sendResponse(connection: connection, statusCode: 400, body: "{\"error\":\"Missing body\"}")

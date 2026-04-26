@@ -3,14 +3,9 @@ import UserNotifications
 
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     private let logger: LoggerProtocol
-    private let windowFocusHandler: WindowFocusProtocol
 
-    init(
-        logger: LoggerProtocol = Logger.shared,
-        windowFocusHandler: WindowFocusProtocol = WindowFocusHandler.shared
-    ) {
+    init(logger: LoggerProtocol = Logger.shared) {
         self.logger = logger
-        self.windowFocusHandler = windowFocusHandler
         super.init()
     }
 
@@ -21,23 +16,29 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     ) {
         logger.log("didReceive called!", category: "NotifDelegate")
         let userInfo = response.notification.request.content.userInfo
-        let actionIdentifier = response.actionIdentifier
+        let rawIdentifier = response.actionIdentifier
 
-        logger.log("Action: \(actionIdentifier)", category: "NotifDelegate")
-        logger.log("UserInfo: \(userInfo)", category: "NotifDelegate")
+        logger.log("Action: \(rawIdentifier)", category: "NotifDelegate")
 
-        if let cwd = userInfo["cwd"] as? String {
-            let shouldFocus = actionIdentifier == UNNotificationDefaultActionIdentifier ||
-                actionIdentifier == AppConfig.showActionIdentifier
-
-            if shouldFocus {
-                logger.log("Focusing Cursor for: \(cwd)", category: "NotifDelegate")
-                DispatchQueue.main.async { [weak self] in
-                    self?.windowFocusHandler.focusCursorWindow(forProjectPath: cwd)
-                }
-            }
-        } else {
+        guard let cwd = userInfo["cwd"] as? String else {
             logger.log("No cwd in userInfo!", category: "NotifDelegate")
+            completionHandler()
+            return
+        }
+
+        let actionIdentifier = rawIdentifier == UNNotificationDefaultActionIdentifier
+            ? AppConfig.showActionIdentifier
+            : rawIdentifier
+        let ideBundleId = userInfo["ideBundleId"] as? String
+        let responsePipe = userInfo["responsePipe"] as? String
+
+        DispatchQueue.main.async {
+            ActionDispatcher.shared.dispatch(
+                actionIdentifier: actionIdentifier,
+                cwd: cwd,
+                ideBundleId: ideBundleId,
+                responsePipe: responsePipe
+            )
         }
 
         completionHandler()
