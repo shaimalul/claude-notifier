@@ -14,11 +14,13 @@ struct WelcomeStepView: View {
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
 
-            Text("Get notified when Claude Code needs your attention - and jump straight to the right IDE window with one click.")
-                .font(.body)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
+            Text(
+                "Get notified when Claude Code needs your attention - and jump straight to the right IDE window with one click."
+            )
+            .font(.body)
+            .foregroundColor(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 40)
 
             Text("Let's get you set up in 3 quick steps.")
                 .font(.subheadline)

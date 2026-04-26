@@ -11,6 +11,5 @@ struct ClaudeNotifierApp: App {
                 .environmentObject(NotificationHistory.shared)
         }
         .menuBarExtraStyle(.menu)
-
     }
 }

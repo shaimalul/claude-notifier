@@ -24,7 +24,15 @@ struct ClaudeNotification: Codable, Identifiable, Equatable {
         }
     }
 
-    init(message: String, cwd: String, sessionId: String, type: String, timestamp: TimeInterval, ideBundleId: String? = nil, responsePipe: String? = nil) {
+    init(
+        message: String,
+        cwd: String,
+        sessionId: String,
+        type: String,
+        timestamp: TimeInterval,
+        ideBundleId: String? = nil,
+        responsePipe: String? = nil
+    ) {
         self.id = UUID()
         self.message = message
         self.cwd = cwd
