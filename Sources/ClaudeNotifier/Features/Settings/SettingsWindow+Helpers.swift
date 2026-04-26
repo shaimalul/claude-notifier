@@ -90,7 +90,9 @@ extension SettingsWindow {
 
     enum IDEOption: String, CaseIterable, Identifiable {
         case autoDetect, cursor, vsCode, custom
-        var id: String { rawValue }
+        var id: String {
+            rawValue
+        }
 
         var displayName: String {
             switch self {

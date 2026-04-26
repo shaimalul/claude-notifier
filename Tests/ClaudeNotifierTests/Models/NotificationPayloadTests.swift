@@ -12,7 +12,7 @@ final class NotificationPayloadTests: XCTestCase {
             "timestamp": 1700000000
         }
         """
-        let data = json.data(using: .utf8)!
+        let data = try XCTUnwrap(json.data(using: .utf8))
 
         let payload = try JSONDecoder().decode(NotificationPayload.self, from: data)
 
@@ -43,14 +43,14 @@ final class NotificationPayloadTests: XCTestCase {
         XCTAssertEqual(notification.projectName, "my-app")
     }
 
-    func test_decodingWithMissingField_fails() {
+    func test_decodingWithMissingField_fails() throws {
         let json = """
         {
             "message": "Test",
             "cwd": "/test"
         }
         """
-        let data = json.data(using: .utf8)!
+        let data = try XCTUnwrap(json.data(using: .utf8))
 
         XCTAssertThrowsError(try JSONDecoder().decode(NotificationPayload.self, from: data))
     }

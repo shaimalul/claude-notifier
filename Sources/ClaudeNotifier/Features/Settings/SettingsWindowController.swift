@@ -24,7 +24,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
     }
 
-    required init?(coder _: NSCoder) { nil }
+    required init?(coder _: NSCoder) {
+        nil
+    }
 
     func show() {
         NSApp.setActivationPolicy(.regular)
