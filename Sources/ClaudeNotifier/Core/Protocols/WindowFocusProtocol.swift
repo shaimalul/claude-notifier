@@ -1,7 +1,7 @@
 import Foundation
 
 protocol WindowFocusProtocol {
-    func focusCursorWindow(forProjectPath path: String)
+    func focusIDEWindow(forProjectPath path: String, ideBundleId: String?)
     func checkAccessibilityPermissions() -> Bool
     func requestAccessibilityPermissions()
 }

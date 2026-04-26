@@ -61,9 +61,20 @@ if [ -d "$RESOURCES_BUNDLE/Resources" ]; then
     cp -r "$RESOURCES_BUNDLE/Resources/"* "$APP_BUNDLE/Contents/Resources/"
 fi
 
-# Copy Claude icon as app icon (for notifications)
-if [ -f "/Applications/Claude.app/Contents/Resources/electron.icns" ]; then
-    cp "/Applications/Claude.app/Contents/Resources/electron.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+# Copy plugin into app bundle Resources for onboarding installer
+if [ -d "$PROJECT_DIR/plugin" ]; then
+    cp -r "$PROJECT_DIR/plugin" "$APP_BUNDLE/Contents/Resources/plugin"
+    echo "Plugin copied to app bundle"
+fi
+
+# Generate app icon
+echo "Generating app icon..."
+swift "$SCRIPT_DIR/generate-icon.swift"
+if [ -f "/tmp/ClaudeNotifierIcon/AppIcon.icns" ]; then
+    cp "/tmp/ClaudeNotifierIcon/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+    echo "App icon copied"
+else
+    echo "Warning: icon generation failed, skipping app icon"
 fi
 
 # Sign the app with entitlements (required for notifications in background apps)

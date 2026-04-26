@@ -6,6 +6,8 @@ struct NotificationPayload: Codable {
     let sessionId: String
     let type: String
     let timestamp: TimeInterval
+    let ideBundleId: String?
+    let responsePipe: String?
 
     func toClaudeNotification() -> ClaudeNotification {
         ClaudeNotification(
@@ -13,7 +15,9 @@ struct NotificationPayload: Codable {
             cwd: cwd,
             sessionId: sessionId,
             type: type,
-            timestamp: timestamp
+            timestamp: timestamp,
+            ideBundleId: ideBundleId,
+            responsePipe: responsePipe
         )
     }
 }

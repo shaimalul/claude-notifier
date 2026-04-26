@@ -29,7 +29,9 @@ final class NotificationPayloadTests: XCTestCase {
             cwd: "/Users/test/my-app",
             sessionId: "abc-123",
             type: "idle_prompt",
-            timestamp: 1_700_000_000
+            timestamp: 1_700_000_000,
+            ideBundleId: nil,
+            responsePipe: nil
         )
 
         let notification = payload.toClaudeNotification()
@@ -37,7 +39,7 @@ final class NotificationPayloadTests: XCTestCase {
         XCTAssertEqual(notification.message, "Test message")
         XCTAssertEqual(notification.cwd, "/Users/test/my-app")
         XCTAssertEqual(notification.sessionId, "abc-123")
-        XCTAssertEqual(notification.type, .idlePrompt)
+        XCTAssertEqual(notification.type, ClaudeNotification.NotificationType.idlePrompt)
         XCTAssertEqual(notification.projectName, "my-app")
     }
 
@@ -59,7 +61,9 @@ final class NotificationPayloadTests: XCTestCase {
             cwd: "/test",
             sessionId: "123",
             type: "unknown",
-            timestamp: 0
+            timestamp: 0,
+            ideBundleId: nil,
+            responsePipe: nil
         )
 
         let data = try JSONEncoder().encode(payload)

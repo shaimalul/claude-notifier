@@ -2,39 +2,60 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
 
 jobs:
-  build-release:
-    runs-on: macos-14
+  release:
+    runs-on: macos-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Build release
+        run: swift build -c release
 
-      - name: Build Release
+      - name: Create app bundle
+        run: ./scripts/create-app-bundle.sh
+
+      - name: Build DMG
+        id: dmg
         run: |
-          swift build -c release
-          ./scripts/create-app-bundle.sh
+          APP=".build/release/ClaudeNotifier.app"
+          VERSION="${GITHUB_REF_NAME#v}"
+          DMG_NAME="ClaudeNotifier-${VERSION}.dmg"
 
-      - name: Create DMG
-        run: |
-          mkdir -p dist
-          # Create a temporary directory for DMG contents
-          mkdir -p /tmp/dmg-contents
-          cp -R .build/ClaudeNotifier.app /tmp/dmg-contents/
+          STAGING="$(mktemp -d)/dmg"
+          mkdir -p "$STAGING"
+          cp -r "$APP" "$STAGING/"
+          ln -s /Applications "$STAGING/Applications"
 
-          hdiutil create -volname "ClaudeNotifier" \
-            -srcfolder /tmp/dmg-contents \
+          hdiutil create \
+            -volname "Claude Notifier" \
+            -srcfolder "$STAGING" \
             -ov -format UDZO \
-            dist/ClaudeNotifier-${{ github.ref_name }}.dmg
+            "$DMG_NAME"
 
-      - name: Create Release
+          echo "dmg=$DMG_NAME" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/ClaudeNotifier-*.dmg
+          name: Claude Notifier ${{ github.ref_name }}
+          draft: false
+          prerelease: false
           generate_release_notes: true
+          body: |
+            ## Install
+
+            1. Download `ClaudeNotifier-${{ steps.dmg.outputs.version }}.dmg` below
+            2. Open the DMG and drag **ClaudeNotifier** to Applications
+            3. Right-click the app → **Open** (required once to bypass Gatekeeper)
+            4. Follow the onboarding to set up permissions and install the Claude Code plugin
+
+            ## What's changed
+          files: ${{ steps.dmg.outputs.dmg }}

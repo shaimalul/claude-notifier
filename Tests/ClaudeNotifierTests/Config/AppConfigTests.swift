@@ -11,10 +11,6 @@ final class AppConfigTests: XCTestCase {
         XCTAssertTrue(AppConfig.logFilePath.hasSuffix(".log"))
     }
 
-    func test_soundFilePath_pointsToSystemSound() {
-        XCTAssertTrue(AppConfig.soundFilePath.contains("/System/Library/Sounds/"))
-    }
-
     func test_notificationCategoryIdentifier_isNotEmpty() {
         XCTAssertFalse(AppConfig.notificationCategoryIdentifier.isEmpty)
     }
@@ -23,11 +19,23 @@ final class AppConfigTests: XCTestCase {
         XCTAssertFalse(AppConfig.showActionIdentifier.isEmpty)
     }
 
-    func test_cursorAppBundleIdentifier_isNotEmpty() {
-        XCTAssertFalse(AppConfig.CursorApp.bundleIdentifier.isEmpty)
+    func test_cursorBundleIdentifier_isNotEmpty() {
+        XCTAssertFalse(AppConfig.IDE.BundleIdentifier.cursor.isEmpty)
     }
 
-    func test_cursorAppName_isCursor() {
-        XCTAssertEqual(AppConfig.CursorApp.appName, "Cursor")
+    func test_vsCodeBundleIdentifier_isNotEmpty() {
+        XCTAssertFalse(AppConfig.IDE.BundleIdentifier.vsCode.isEmpty)
+    }
+
+    func test_supportedIDEs_containsCursorAndVSCode() {
+        let bundleIds = AppConfig.IDE.supported.map(\.bundleId)
+        XCTAssertTrue(bundleIds.contains(AppConfig.IDE.BundleIdentifier.cursor))
+        XCTAssertTrue(bundleIds.contains(AppConfig.IDE.BundleIdentifier.vsCode))
+    }
+
+    func test_supportedIDEs_haveNonEmptyNames() {
+        for ide in AppConfig.IDE.supported {
+            XCTAssertFalse(ide.name.isEmpty)
+        }
     }
 }

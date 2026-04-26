@@ -1,0 +1,14 @@
+{
+  "name": "claude-notifier",
+  "displayName": "Claude Notifier",
+  "description": "Native macOS notifications when Claude Code needs your attention. Click to jump straight to your IDE window.",
+  "version": "1.0.0",
+  "author": "anthropics",
+  "repository": "https://github.com/anthropics/claude-notifier",
+  "homepage": "https://github.com/anthropics/claude-notifier",
+  "keywords": ["notifications", "macos", "menu-bar", "ide", "cursor", "vscode"],
+  "platforms": ["macos"],
+  "license": "MIT",
+  "installInstructions": "Also download and install ClaudeNotifier.app from the releases page for the full experience.",
+  "hooks": "./hooks/hooks.json"
+}
