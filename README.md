@@ -13,7 +13,8 @@ Claude Notifier is a macOS menu bar app that watches your Claude Code sessions a
 
 ## Download
 
-**[Download the latest DMG from Releases →](https://github.com/shaimalul/claude-notifier/releases/latest)**
+**[Download the latest DMG from Releases →](https://github.com/shaimalul/claude-notifier/releases/latest)**  
+If Releases is empty, there isn't a published DMG yet — use **Build from Source** below (or see **Releasing** if you're the maintainer).
 
 1. Open the DMG and drag **ClaudeNotifier** to your Applications folder
 2. Right-click the app → **Open** (one-time step — macOS asks because the app is not from the App Store)
@@ -114,6 +115,20 @@ Or run the install script for a one-command local setup:
 ```bash
 ./scripts/install.sh
 ```
+
+---
+
+## Releasing (Maintainers)
+
+Pushing a git tag triggers GitHub Actions to build and attach a DMG to a GitHub Release.
+
+```bash
+# example
+git tag v0.3.1
+git push origin v0.3.1
+```
+
+Then open GitHub → **Actions** → `Release` and wait for it to finish; the DMG shows up under **Releases**.
 
 ---
 
