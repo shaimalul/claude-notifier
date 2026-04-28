@@ -164,7 +164,11 @@ swiftformat .     # format
 ./scripts/uninstall.sh
 ```
 
-Or manually: quit the app, delete `/Applications/ClaudeNotifier.app`, and remove `~/.claude/plugins/claude-notifier`.
+Or manually:
+
+1. Quit **ClaudeNotifier**
+2. Delete the app from `/Applications/ClaudeNotifier.app` (DMG install) or `~/Applications/ClaudeNotifier.app` (script/source install)
+3. Remove the Claude plugin with `claude plugin uninstall claude-notifier` (if you have the CLI), or delete `~/.claude/plugins/claude-notifier` (some older installs used `~/.claude/plugins/claude-notifier-plugin`)
 
 ---
 
