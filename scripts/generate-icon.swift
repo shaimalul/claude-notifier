@@ -1,7 +1,7 @@
 #!/usr/bin/swift
 
-// Generates AppIcon.icns for Luke.
-// Output: /tmp/LukeIcon/AppIcon.icns
+// Generates AppIcon.icns for Claude Notifier.
+// Output: /tmp/ClaudeNotifierIcon/AppIcon.icns
 // Run: swift scripts/generate-icon.swift
 
 import AppKit
@@ -24,7 +24,7 @@ func makeIcon(px: Int) -> NSImage {
     let size = CGFloat(px)
     let bounds = CGRect(origin: .zero, size: CGSize(width: size, height: size))
 
-    NSImage(size: bounds.size, flipped: false) { _ in
+    return NSImage(size: bounds.size, flipped: false) { _ in
         guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
 
         // macOS standard rounded rect clip
@@ -53,9 +53,9 @@ func makeIcon(px: Int) -> NSImage {
             )
         }
 
-        // Text mark: "Luke" at large sizes, "L" at small sizes for legibility
-        let word: String = px >= 128 ? "Luke" : "L"
-        let fontSize: CGFloat = px >= 128 ? size * 0.36 : size * 0.56
+        // Text mark: "CN" at large sizes, "C" at small sizes for legibility
+        let word: String = px >= 128 ? "CN" : "C"
+        let fontSize: CGFloat = px >= 128 ? size * 0.44 : size * 0.60
 
         let font = NSFont.systemFont(ofSize: fontSize, weight: .semibold)
         let attrs: [NSAttributedString.Key: Any] = [
@@ -76,7 +76,7 @@ func makeIcon(px: Int) -> NSImage {
     }
 }
 
-let outputDir = URL(fileURLWithPath: "/tmp/LukeIcon")
+let outputDir = URL(fileURLWithPath: "/tmp/ClaudeNotifierIcon")
 let iconsetDir = outputDir.appendingPathComponent("AppIcon.iconset")
 
 let fm = FileManager.default

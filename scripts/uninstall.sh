@@ -6,8 +6,10 @@ set -e
 
 # Configuration
 APP_NAME="ClaudeNotifier"
-INSTALL_DIR="$HOME/Applications"
-PLUGIN_DIR="$HOME/.claude/plugins/claude-notifier-plugin"
+INSTALL_DIR_USER="$HOME/Applications"
+INSTALL_DIR_SYSTEM="/Applications"
+PLUGIN_DIR_1="$HOME/.claude/plugins/claude-notifier"
+PLUGIN_DIR_2="$HOME/.claude/plugins/claude-notifier-plugin"
 
 # Colors
 RED='\033[0;31m'
@@ -44,11 +46,19 @@ osascript -e "tell application \"System Events\" to delete login item \"$APP_NAM
 
 # Step 3: Remove app
 log_step "Removing app..."
-if [ -d "$INSTALL_DIR/$APP_NAME.app" ]; then
-    rm -rf "$INSTALL_DIR/$APP_NAME.app"
-    log_info "Removed $INSTALL_DIR/$APP_NAME.app"
-else
-    log_info "App not found at $INSTALL_DIR/$APP_NAME.app"
+removed_app=false
+if [ -d "$INSTALL_DIR_SYSTEM/$APP_NAME.app" ]; then
+    rm -rf "$INSTALL_DIR_SYSTEM/$APP_NAME.app"
+    log_info "Removed $INSTALL_DIR_SYSTEM/$APP_NAME.app"
+    removed_app=true
+fi
+if [ -d "$INSTALL_DIR_USER/$APP_NAME.app" ]; then
+    rm -rf "$INSTALL_DIR_USER/$APP_NAME.app"
+    log_info "Removed $INSTALL_DIR_USER/$APP_NAME.app"
+    removed_app=true
+fi
+if [ "$removed_app" = false ]; then
+    log_info "App not found in $INSTALL_DIR_SYSTEM or $INSTALL_DIR_USER"
 fi
 
 # Step 4: Uninstall plugin
@@ -59,12 +69,20 @@ if command -v claude &> /dev/null; then
     claude plugin uninstall claude-notifier 2>/dev/null || true
 fi
 
-# Remove directory if exists
-if [ -d "$PLUGIN_DIR" ]; then
-    rm -rf "$PLUGIN_DIR"
-    log_info "Removed plugin from $PLUGIN_DIR"
-else
-    log_info "Plugin not found at $PLUGIN_DIR"
+# Remove directories if exist
+removed_plugin=false
+if [ -d "$PLUGIN_DIR_1" ]; then
+    rm -rf "$PLUGIN_DIR_1"
+    log_info "Removed plugin from $PLUGIN_DIR_1"
+    removed_plugin=true
+fi
+if [ -d "$PLUGIN_DIR_2" ]; then
+    rm -rf "$PLUGIN_DIR_2"
+    log_info "Removed plugin from $PLUGIN_DIR_2"
+    removed_plugin=true
+fi
+if [ "$removed_plugin" = false ]; then
+    log_info "Plugin not found at $PLUGIN_DIR_1 or $PLUGIN_DIR_2"
 fi
 
 # Done
