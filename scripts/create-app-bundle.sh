@@ -11,14 +11,18 @@ BUILD_DIR="$PROJECT_DIR/.build/release"
 APP_BUNDLE="$BUILD_DIR/ClaudeNotifier.app"
 RESOURCES_BUNDLE="$PROJECT_DIR/.build/arm64-apple-macosx/release/ClaudeNotifier_ClaudeNotifier.bundle"
 
+# Derive version from the nearest git tag (strips leading 'v'), falls back to 0.0.0
+VERSION=$(git -C "$PROJECT_DIR" describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+echo "Building version $VERSION"
+
 echo "Creating app bundle at $APP_BUNDLE..."
 
 # Create bundle structure
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 
-# Create Info.plist
-cat > "$APP_BUNDLE/Contents/Info.plist" << 'EOF'
+# Create Info.plist — version injected from git tag
+cat > "$APP_BUNDLE/Contents/Info.plist" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -32,9 +36,9 @@ cat > "$APP_BUNDLE/Contents/Info.plist" << 'EOF'
     <key>CFBundleDisplayName</key>
     <string>Claude Notifier</string>
     <key>CFBundleVersion</key>
-    <string>1.0.0</string>
+    <string>$VERSION</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.0</string>
+    <string>$VERSION</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleIconFile</key>
