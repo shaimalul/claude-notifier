@@ -1,12 +1,20 @@
 import SwiftUI
 
-// Replicates the app icon exactly — same colors, same radial depth, same corner radius.
+/// Replicates the app icon — same colors, radial depth, and corner radius.
 struct CNLogo: View {
     var size: CGFloat = 32
 
-    private var cornerRadius: CGFloat { size * 0.22 }
-    private var fontSize: CGFloat { size >= 20 ? size * 0.44 : size * 0.60 }
-    private var label: String { size >= 20 ? "CN" : "C" }
+    private var cornerRadius: CGFloat {
+        size * 0.22
+    }
+
+    private var fontSize: CGFloat {
+        size >= 20 ? size * 0.44 : size * 0.60
+    }
+
+    private var label: String {
+        size >= 20 ? "CN" : "C"
+    }
 
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
