@@ -30,8 +30,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.startHTTPServer()
         }
 
-        WindowFocusHandler.shared.requestAccessibilityPermissions()
-
         OnboardingCoordinator.shared.presentIfNeeded()
     }
 
