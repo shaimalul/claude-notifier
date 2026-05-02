@@ -6,6 +6,26 @@ extension SettingsWindow {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
     }
 
+    func sectionHeader(_ title: String, icon: String) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(.secondary)
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
+        }
+        .textCase(nil)
+    }
+
+    func labelWithInfo(_ title: String, info: String) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            InfoButton(text: info)
+        }
+    }
+
     func soundDisplayName(_ path: String) -> String {
         URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
     }
