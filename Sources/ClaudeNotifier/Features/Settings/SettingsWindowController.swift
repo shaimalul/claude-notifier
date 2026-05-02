@@ -54,7 +54,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         return blur
     }
 
-    required init?(coder _: NSCoder) { nil }
+    required init?(coder _: NSCoder) {
+        nil
+    }
 
     func show() {
         NSApp.setActivationPolicy(.regular)
