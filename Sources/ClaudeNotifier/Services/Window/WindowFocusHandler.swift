@@ -33,10 +33,11 @@ final class WindowFocusHandler: WindowFocusProtocol {
     }
 
     func checkAccessibilityPermissions() -> Bool {
-        AXIsProcessTrustedWithOptions([kAXTrustedKey: true] as CFDictionary)
+        AXIsProcessTrusted()
     }
 
     func requestAccessibilityPermissions() {
+        guard !AXIsProcessTrusted() else { return }
         _ = AXIsProcessTrustedWithOptions([kAXTrustedKey: true] as CFDictionary)
     }
 

@@ -2,13 +2,31 @@ import SwiftUI
 
 extension SettingsWindow {
     var generalSection: some View {
-        Section("General") {
-            Toggle("Launch at Login", isOn: $settingsStore.settings.launchAtLogin)
-                .onChange(of: settingsStore.settings.launchAtLogin) { newValue in
-                    try? LaunchAtLoginService.shared.setEnabled(newValue)
-                }
-            Toggle("Start Paused", isOn: $settingsStore.settings.isPaused)
-            Toggle("Do Not Disturb", isOn: $settingsStore.settings.dndEnabled)
+        Section {
+            Toggle(isOn: $settingsStore.settings.launchAtLogin) {
+                labelWithInfo(
+                    "Launch at Login",
+                    info: "Automatically starts Claude Notifier when you log in. You won't miss any notifications after a reboot."
+                )
+            }
+            .onChange(of: settingsStore.settings.launchAtLogin) { newValue in
+                try? LaunchAtLoginService.shared.setEnabled(newValue)
+            }
+
+            Toggle(isOn: $settingsStore.settings.isPaused) {
+                labelWithInfo(
+                    "Start Paused",
+                    info: "Launches without showing any notifications. Resume anytime from the menu bar icon. Useful when you want to start the app without being interrupted right away."
+                )
+            }
+
+            Toggle(isOn: $settingsStore.settings.dndEnabled) {
+                labelWithInfo(
+                    "Do Not Disturb",
+                    info: "Silences all notifications during the quiet hours you set below. Example: set 22:00–08:00 to mute notifications overnight."
+                )
+            }
+
             if settingsStore.settings.dndEnabled {
                 Picker("From", selection: $settingsStore.settings.dndStartHour) {
                     ForEach(0 ..< 24, id: \.self) { Text("\($0):00").tag($0) }
@@ -17,27 +35,46 @@ extension SettingsWindow {
                     ForEach(0 ..< 24, id: \.self) { Text("\($0):00").tag($0) }
                 }
             }
-            Section("Notify on") {
+
+            Section {
                 ForEach(Self.eventTypes, id: \.key) { event in
-                    Toggle(event.label, isOn: Binding(
+                    Toggle(isOn: Binding(
                         get: { settingsStore.settings.enabledEventTypes.contains(event.key) },
                         set: { _ in toggleEvent(event.key) }
-                    ))
+                    )) {
+                        labelWithInfo(event.label, info: eventTypeInfo(event.key))
+                    }
                 }
+            } header: {
+                Text("Notify on")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .textCase(nil)
             }
+        } header: {
+            sectionHeader("General", icon: "gearshape")
         }
     }
 
     var soundSection: some View {
-        Section("Sound") {
-            Picker("Sound", selection: $settingsStore.settings.soundPath) {
+        Section {
+            Picker(selection: $settingsStore.settings.soundPath) {
                 Text("None").tag("")
                 ForEach(availableSounds, id: \.self) { path in
                     Text(soundDisplayName(path)).tag(path)
                 }
+            } label: {
+                labelWithInfo(
+                    "Sound",
+                    info: "The system sound played alongside each notification. Choose None for silent notifications."
+                )
             }
+
             HStack {
-                Text("Volume")
+                labelWithInfo(
+                    "Volume",
+                    info: "Controls how loud the notification sound plays. This is independent of your system volume."
+                )
                 Slider(value: $settingsStore.settings.soundVolume, in: 0 ... 1, step: 0.05)
                 Text("\(Int(settingsStore.settings.soundVolume * 100))%")
                     .foregroundColor(.secondary)
@@ -45,100 +82,21 @@ extension SettingsWindow {
                 Button("Preview") { previewSound() }
                     .disabled(settingsStore.settings.soundPath.isEmpty)
             }
+        } header: {
+            sectionHeader("Sound", icon: "speaker.wave.2")
         }
     }
 
-    var notificationsSection: some View {
-        Section("Notification Templates") {
-            VStack(alignment: .leading, spacing: 4) {
-                TextField("Title", text: $settingsStore.settings.titleTemplate)
-                Text("Tokens: {project}, {message}, {sessionId}")
-                    .font(.caption).foregroundColor(.secondary)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                TextField("Body", text: $settingsStore.settings.bodyTemplate)
-                Text("Tokens: {project}, {message}, {sessionId}")
-                    .font(.caption).foregroundColor(.secondary)
-            }
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Preview").font(.caption).foregroundColor(.secondary)
-                Text(renderTemplate(settingsStore.settings.titleTemplate)).font(.headline)
-                Text(renderTemplate(settingsStore.settings.bodyTemplate))
-                    .font(.body).foregroundColor(.secondary)
-            }
-            Button("Reset to Defaults") { resetTemplates() }
-        }
-    }
-
-    var actionsSection: some View {
-        Section("Notification Actions") {
-            Text("Actions appear in notifications. First action is the primary.")
-                .font(.caption).foregroundColor(.secondary)
-            ForEach(Array(settingsStore.settings.customActions.enumerated()), id: \.element.id) { index, action in
-                actionRow(action: action, index: index)
-            }
-            if settingsStore.settings.customActions.count < Self.maxActions {
-                Button("Add Action") { addAction() }
-            }
-        }
-    }
-
-    func actionRow(action: CustomAction, index: Int) -> some View {
-        HStack {
-            TextField("Title", text: Binding(
-                get: { action.title },
-                set: { updateActionTitle(at: index, to: $0) }
-            ))
-            Picker("", selection: Binding(
-                get: { action.kind },
-                set: { updateActionKind(at: index, to: $0) }
-            )) {
-                ForEach(CustomAction.Kind.allCases, id: \.self) { Text($0.displayName).tag($0) }
-            }
-            .labelsHidden()
-            .frame(width: 160)
-            Button { removeAction(at: index) } label: { Image(systemName: "minus.circle") }
-                .buttonStyle(.plain)
-                .disabled(!canRemoveAction(action))
-        }
-    }
-
-    var ideSection: some View {
-        Section("IDE") {
-            Picker("Focus", selection: $selectedIDEOption) {
-                ForEach(IDEOption.allCases) { Text($0.displayName).tag($0) }
-            }
-            .onChange(of: selectedIDEOption) { newValue in
-                if newValue != .custom { settingsStore.settings.ideBundleId = newValue.bundleId }
-            }
-            if selectedIDEOption == .custom {
-                TextField("Bundle ID", text: $settingsStore.settings.ideBundleId)
-            }
-            if !runningIDEs.isEmpty {
-                Text("Running: \(runningIDEs.joined(separator: ", "))")
-                    .font(.caption).foregroundColor(.secondary)
-            }
-        }
-    }
-
-    var aboutSection: some View {
-        Section("About") {
-            HStack {
-                Text("Version")
-                Spacer()
-                Text(appVersion).foregroundColor(.secondary)
-            }
-            Button("Check for Updates...") { UpdateService.shared.checkForUpdates() }
-            Button("View Logs") {
-                NSWorkspace.shared.open(URL(fileURLWithPath: "/tmp/claudenotifier_debug.log"))
-            }
-            Button("Reset All Settings", role: .destructive) { showResetConfirmation = true }
-                .alert("Reset All Settings?", isPresented: $showResetConfirmation) {
-                    Button("Cancel", role: .cancel) {}
-                    Button("Reset", role: .destructive) { SettingsStore.shared.reset() }
-                } message: {
-                    Text("This will restore all settings to defaults and cannot be undone.")
-                }
+    func eventTypeInfo(_ key: String) -> String {
+        switch key {
+        case "permission_prompt":
+            "Claude is asking to run a potentially sensitive command and needs your approval.\n\nExample: \"Allow Bash to run npm install?\""
+        case "idle_prompt":
+            "Claude has finished its current task and is idle, waiting for your next message."
+        case "elicitation_dialog":
+            "Claude opened an interactive form that requires structured input from you before it can continue.\n\nExample: filling in configuration values."
+        default:
+            "Any Claude event that doesn't fit the categories above."
         }
     }
 }
